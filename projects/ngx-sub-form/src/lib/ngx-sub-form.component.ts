@@ -1,4 +1,4 @@
-import { OnDestroy } from '@angular/core';
+import { OnDestroy, Directive, Component } from '@angular/core';
 import {
   AbstractControl,
   AbstractControlOptions,
@@ -31,6 +31,7 @@ type FilterControlFunction<FormInterface> = (
   isCtrlWithinFormArray: boolean,
 ) => boolean;
 
+@Directive()
 export abstract class NgxSubFormComponent<ControlInterface, FormInterface = ControlInterface>
   implements ControlValueAccessor, Validator, OnDestroy, OnFormUpdate<FormInterface> {
   public get formGroupControls(): ControlsType<FormInterface> {
@@ -420,6 +421,7 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
   }
 }
 
+@Directive()
 export abstract class NgxSubFormRemapComponent<ControlInterface, FormInterface> extends NgxSubFormComponent<
   ControlInterface,
   FormInterface

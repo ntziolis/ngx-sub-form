@@ -1,10 +1,11 @@
-import { EventEmitter, OnInit, Input } from '@angular/core';
+import { EventEmitter, OnInit, Input, Component, Directive } from '@angular/core';
 import isEqual from 'fast-deep-equal';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { filter, tap } from 'rxjs/operators';
 import { NgxSubFormRemapComponent } from './ngx-sub-form.component';
 import { takeUntilDestroyed, isNullOrUndefined } from './ngx-sub-form-utils';
 
+@Directive()
 export abstract class NgxRootFormComponent<ControlInterface, FormInterface = ControlInterface>
   extends NgxSubFormRemapComponent<ControlInterface, FormInterface>
   implements OnInit {
