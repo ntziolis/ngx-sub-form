@@ -23,6 +23,8 @@ import {
   ArrayPropertyKey,
 } from './ngx-sub-form-utils';
 import { FormGroupOptions, NgxFormWithArrayControls, OnFormUpdate, TypedFormGroup } from './ngx-sub-form.types';
+import { SubFormGroup } from './sub-form-group';
+import { SubFormProvider } from './sub-form.directive';
 
 type MapControlFunction<FormInterface, MapValue> = (ctrl: AbstractControl, key: keyof FormInterface) => MapValue;
 type FilterControlFunction<FormInterface> = (
@@ -32,7 +34,7 @@ type FilterControlFunction<FormInterface> = (
 ) => boolean;
 
 export abstract class NgxSubFormComponent<ControlInterface, FormInterface = ControlInterface>
-  implements ControlValueAccessor, Validator, OnDestroy, OnFormUpdate<FormInterface> {
+  implements ControlValueAccessor, Validator, OnDestroy, OnFormUpdate<FormInterface>, SubFormProvider<ControlInterface, FormInterface> {
   public get formGroupControls(): ControlsType<FormInterface> {
     // @note form-group-undefined we need the return null here because we do not want to expose the fact that
     // the form can be undefined, it's handled internally to contain an Angular bug
@@ -117,6 +119,11 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
       }
     }, 0);
   }
+
+  initFormGroup(formGroup: SubFormGroup<ControlInterface, FormInterface>){
+    this.formGroup = formGroup as unknown as any;
+    formGroup.initSubForm(this);
+  };
 
   // can't define them directly
   protected abstract getFormControls(): Controls<FormInterface>;
