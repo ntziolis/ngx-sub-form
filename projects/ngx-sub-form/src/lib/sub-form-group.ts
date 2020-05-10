@@ -1,5 +1,5 @@
 import { AbstractControlOptions, AsyncValidatorFn, FormGroup, ValidatorFn } from '@angular/forms';
-import { map } from 'rxjs/operators';
+import { map, switchMap } from 'rxjs/operators';
 
 import { NgxSubFormComponent } from './ngx-sub-form.component';
 import { Observable } from 'rxjs';
@@ -29,7 +29,10 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
   }
 
   get valueChanges() {
-    return this._valueChanges.pipe(map(value => this.transformFromFormGroup(value)));
+    return this._valueChanges.pipe(
+      map(value => this.transformFromFormGroup(value)),
+      this.subForm.handleEmissionRate(),
+    );
   }
   set valueChanges(value) {
     this._valueChanges = value;
@@ -48,17 +51,30 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
   }
 
   setValue(value: TControl, options: { onlySelf?: boolean; emitEvent?: boolean } = {}): void {
-    super.setValue((this.transformToFormGroup(value, this.getDefaultValues()) as unknown) as TControl, options);
+    const transformedValue = (this.transformToFormGroup(value, this.getDefaultValues()) as unknown) as TControl;
+    this.subForm.handleFormArrayControls(transformedValue);
+    super.setValue(transformedValue, options);
   }
 
   patchValue(value: Partial<TControl>, options: { onlySelf?: boolean; emitEvent?: boolean } = {}): void {
-    super.patchValue(
-      (this.transformToFormGroup((value as unknown) as TControl, this.getDefaultValues()) as unknown) as TControl,
-      options,
-    );
+    const transformedValue = (this.transformToFormGroup(
+      (value as unknown) as TControl,
+      this.getDefaultValues(),
+    ) as unknown) as TControl;
+
+    this.subForm.handleFormArrayControls(transformedValue);
+
+    super.patchValue(transformedValue, options);
   }
 
   reset(value: Partial<TControl> = {}, options: { onlySelf?: boolean; emitEvent?: boolean } = {}): void {
-    super.reset(this.transformToFormGroup((value as unknown) as TControl, this.getDefaultValues()), options);
+    const transformedValue = (this.transformToFormGroup(
+      (value as unknown) as TControl,
+      this.getDefaultValues(),
+    ) as unknown) as TControl;
+
+    this.subForm.handleFormArrayControls(transformedValue);
+
+    super.reset(transformedValue, options);
   }
 }
