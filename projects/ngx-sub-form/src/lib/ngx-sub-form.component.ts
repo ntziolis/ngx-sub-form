@@ -12,6 +12,7 @@ import {
   isNullOrUndefined,
 } from './ngx-sub-form-utils';
 import { FormGroupOptions, NgxFormWithArrayControls, TypedFormGroup } from './ngx-sub-form.types';
+import { SubFormGroup } from './sub-form-group';
 
 type MapControlFunction<FormInterface, MapValue> = (ctrl: AbstractControl, key: keyof FormInterface) => MapValue;
 type FilterControlFunction<FormInterface> = (
@@ -79,7 +80,8 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
   ngOnInit() {
     // TODO change type of formGroup to be derived form SubFormGroup / SubFormArray then remove as any
     // inject the component into the SubFormGroup / SubFormArray
-    (this.formGroup as any).setSubFrom(this);
+    const subForm = ((this.formGroup as unknown) as SubFormGroup<ControlInterface, FormInterface>);
+    subForm.setSubForm(this);
 
     const controls = this.getFormControls();
     for (const key in controls) {
@@ -91,6 +93,11 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
     this.controlKeys = (Object.keys(controls) as unknown) as (keyof FormInterface)[];
 
     const options = this.getFormGroupControlOptions() as AbstractControlOptions;
+
+    // TODO implement validator handling that inlcudes grabbing what was set in the parent
+    if(subForm.parentValidatorOrOpts){
+
+    }
 
     if (options) {
       if (options.validators) {
@@ -108,12 +115,14 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
     // if the form has default values, they should be applied straight away
     const defaultValues: Partial<FormInterface> | null = this.getDefaultValues();
 
-    // reset the form with default values
+    // get default values for reset, if null fallback to undefined as there si a difference when calling reset
+    const transformedValue = this.transformFromFormGroup(defaultValues as FormInterface) || undefined;
     // since this is the initial setting of form values do NOT emit an event
-    this.formGroup.reset(this.transformFromFormGroup(defaultValues as FormInterface), { emitEvent: false });
+    
+    this.formGroup.reset(transformedValue, { onlySelf: true, emitEvent: false });
 
     // check if this needs to be called after reset was called
-    this.formGroup.updateValueAndValidity({ emitEvent: false });
+    this.formGroup.updateValueAndValidity({ onlySelf: true, emitEvent: false });
   }
 
   private mapControls<MapValue>(

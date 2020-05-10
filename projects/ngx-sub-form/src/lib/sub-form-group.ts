@@ -1,48 +1,38 @@
 import { AbstractControlOptions, AsyncValidatorFn, FormGroup, ValidatorFn } from '@angular/forms';
-import { map, switchMap } from 'rxjs/operators';
 
 import { NgxSubFormComponent } from './ngx-sub-form.component';
-import { Observable } from 'rxjs';
 
 export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
   private subForm!: NgxSubFormComponent<TControl, TForm>;
+
   private transformToFormGroup!: NgxSubFormComponent<TControl, TForm>['transformToFormGroup'];
   private transformFromFormGroup!: NgxSubFormComponent<TControl, TForm>['transformFromFormGroup'];
   private getDefaultValues!: NgxSubFormComponent<TControl, TForm>['getDefaultValues'];
 
-  // fields we have to reimplement since super cannot be used
-  private _valueChanges!: Observable<any>;
-  private _value: any;
+  public readonly parentValidatorOrOpts: ValidatorFn | ValidatorFn[] | AbstractControlOptions | null | undefined;
+  public readonly parentAsyncValidator: AsyncValidatorFn | AsyncValidatorFn[] | null | undefined;
 
   constructor(
     validatorOrOpts?: ValidatorFn | ValidatorFn[] | AbstractControlOptions | null,
     asyncValidator?: AsyncValidatorFn | AsyncValidatorFn[] | null,
   ) {
-    super({}, validatorOrOpts, asyncValidator);
+    // its important to NOT set validators here as this will trigger calls to value before setSubForm was called
+    super({});
+
+    this.parentValidatorOrOpts = validatorOrOpts;
+    this.parentAsyncValidator = asyncValidator;
   }
 
-  initSubForm(subForm: NgxSubFormComponent<TControl, TForm>) {
+  setSubForm(subForm: NgxSubFormComponent<TControl, TForm>) {
     this.subForm = subForm;
-    this.transformToFormGroup = this.subForm['transformToFormGroup'];
+
+    // transform to form group should never return null / undefined but {} instead
+    this.transformToFormGroup = (obj: TControl | null, defaultValues: Partial<TForm>) => {
+      return this.subForm['transformToFormGroup'](obj, defaultValues) || ({} as TForm);
+    };
+
     this.transformFromFormGroup = this.subForm['transformFromFormGroup'];
     this.getDefaultValues = this.subForm['getDefaultValues'];
-  }
-
-  get valueChanges() {
-    return this._valueChanges.pipe(
-      map(value => this.transformFromFormGroup(value)),
-      this.subForm.handleEmissionRate(),
-    );
-  }
-  set valueChanges(value) {
-    this._valueChanges = value;
-  }
-
-  get value() {
-    return this.transformFromFormGroup(this._value);
-  }
-  set value(value) {
-    this._value = value;
   }
 
   getRawValue(): any {
@@ -52,28 +42,45 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
 
   setValue(value: TControl, options: { onlySelf?: boolean; emitEvent?: boolean } = {}): void {
     const transformedValue = (this.transformToFormGroup(value, this.getDefaultValues()) as unknown) as TControl;
-    this.subForm.handleFormArrayControls(transformedValue);
+
+    // TODO figure out how to handle for arrays
+    // this.subForm.handleFormArrayControls(transformedValue);
+
     super.setValue(transformedValue, options);
   }
 
   patchValue(value: Partial<TControl>, options: { onlySelf?: boolean; emitEvent?: boolean } = {}): void {
+    // TODO check if providing {} does work, as we do not want to override existing values with default values
+    // It might be that patchValue cannot be used as we dont have control over how transformToFormGroup is implemented
+    // it would have to be done in a way that returns a partial TForm which right now is not how the method signatures are defined
+
     const transformedValue = (this.transformToFormGroup(
       (value as unknown) as TControl,
-      this.getDefaultValues(),
+
+      {},
     ) as unknown) as TControl;
 
-    this.subForm.handleFormArrayControls(transformedValue);
+    // TODO figure out how to handle for arrays
+    // this.subForm.handleFormArrayControls(transformedValue);
 
     super.patchValue(transformedValue, options);
   }
 
   reset(value: Partial<TControl> = {}, options: { onlySelf?: boolean; emitEvent?: boolean } = {}): void {
+    // reset is triggered from parent when formgroup is created
+    // then again from sub-form inside ngOnInit after subForm was set
+    // so when can safely ignore resets prior to subForm being set
+    if (!this.subForm) {
+      return;
+    }
+
     const transformedValue = (this.transformToFormGroup(
       (value as unknown) as TControl,
       this.getDefaultValues(),
     ) as unknown) as TControl;
 
-    this.subForm.handleFormArrayControls(transformedValue);
+    // TODO figure out how to handle for arrays
+    //this.subForm.handleFormArrayControls(transformedValue);
 
     super.reset(transformedValue, options);
   }
