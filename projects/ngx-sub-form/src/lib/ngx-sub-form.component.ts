@@ -1,30 +1,17 @@
-import { OnDestroy, Input, OnInit } from '@angular/core';
+import { Input, OnDestroy, OnInit } from '@angular/core';
+import { AbstractControl, AbstractControlOptions, FormArray, FormControl, ValidationErrors } from '@angular/forms';
+import { Observable } from 'rxjs';
+
 import {
-  AbstractControl,
-  AbstractControlOptions,
-  ControlValueAccessor,
-  FormGroup,
-  ValidationErrors,
-  Validator,
-  FormArray,
-  FormControl,
-} from '@angular/forms';
-import { merge, Observable, Subscription } from 'rxjs';
-import { delay, filter, map, startWith, withLatestFrom } from 'rxjs/operators';
-import {
+  ArrayPropertyKey,
   ControlMap,
   Controls,
   ControlsNames,
-  FormUpdate,
-  MissingFormControlsError,
+  ControlsType,
   FormErrors,
   isNullOrUndefined,
-  ControlsType,
-  ArrayPropertyKey,
 } from './ngx-sub-form-utils';
-import { FormGroupOptions, NgxFormWithArrayControls, OnFormUpdate, TypedFormGroup } from './ngx-sub-form.types';
-import { SubFormGroup } from './sub-form-group';
-import { SubFormProvider } from './sub-form.directive';
+import { FormGroupOptions, NgxFormWithArrayControls, TypedFormGroup } from './ngx-sub-form.types';
 
 type MapControlFunction<FormInterface, MapValue> = (ctrl: AbstractControl, key: keyof FormInterface) => MapValue;
 type FilterControlFunction<FormInterface> = (
@@ -86,13 +73,10 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
   protected emitNullOnDestroy = true;
   protected emitInitialValueOnInit = true;
 
-  constructor() {
-  }
-
   // can't define them directly
   protected abstract getFormControls(): Controls<FormInterface>;
 
-  ngOnInit() {    
+  ngOnInit() {
     // TODO change type of formGroup to be derived form SubFormGroup / SubFormArray then remove as any
     // inject the component into the SubFormGroup / SubFormArray
     (this.formGroup as any).setSubFrom(this);
@@ -123,11 +107,11 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
 
     // if the form has default values, they should be applied straight away
     const defaultValues: Partial<FormInterface> | null = this.getDefaultValues();
-    
+
     // reset the form with default values
     // since this is the initial setting of form values do NOT emit an event
     this.formGroup.reset(this.transformFromFormGroup(defaultValues as FormInterface), { emitEvent: false });
-    
+
     // check if this needs to be called after reset was called
     this.formGroup.updateValueAndValidity({ emitEvent: false });
   }
@@ -196,7 +180,7 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
 
     // TODO see if we still need this as this would require handling of some special value inside the SubFromGroup / SubFromArray
     // this is because the chanegs stream comes directly out of the formGroup so there is on way to plug it in
-    // if (this.emitNullOnDestroy) {      
+    // if (this.emitNullOnDestroy) {
     //   this.formGroup.setValue(null as any);
     // }
   }
@@ -206,8 +190,6 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
   protected getDefaultValues(): Partial<FormInterface> | null {
     return null;
   }
-
-  
 
   public handleFormArrayControls(obj: any) {
     Object.entries(obj).forEach(([key, value]) => {
@@ -258,8 +240,6 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
   protected transformFromFormGroup(formValue: FormInterface): ControlInterface | null {
     return (formValue as any) as ControlInterface;
   }
-
-  
 }
 
 export abstract class NgxSubFormRemapComponent<ControlInterface, FormInterface> extends NgxSubFormComponent<
@@ -272,8 +252,6 @@ export abstract class NgxSubFormRemapComponent<ControlInterface, FormInterface> 
   ): FormInterface | null;
   protected abstract transformFromFormGroup(formValue: FormInterface): ControlInterface | null;
 }
-
-
 
 // public writeValue(obj: Required<ControlInterface> | null): void {
 //   // @hack see where defining this.formGroup to undefined
@@ -327,7 +305,6 @@ export abstract class NgxSubFormRemapComponent<ControlInterface, FormInterface> 
 //   this.formGroup.markAsPristine();
 //   this.formGroup.markAsUntouched();
 // }
-
 
 // public registerOnChange(fn: (_: any) => void): void {
 //   if (!this.formGroup) {
