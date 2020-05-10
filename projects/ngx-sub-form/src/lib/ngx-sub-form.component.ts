@@ -1,7 +1,16 @@
 import { Input, OnDestroy, OnInit } from '@angular/core';
-import { AbstractControl, AbstractControlOptions, FormArray, FormControl, ValidationErrors } from '@angular/forms';
+import {
+  AbstractControl,
+  AbstractControlOptions,
+  AsyncValidatorFn,
+  FormArray,
+  FormControl,
+  ValidationErrors,
+  ValidatorFn,
+} from '@angular/forms';
 import { Observable } from 'rxjs';
 
+import { coerceToAsyncValidator, coerceToValidator } from './abstract-control-utils';
 import {
   ArrayPropertyKey,
   ControlMap,
@@ -79,8 +88,8 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
 
   ngOnInit() {
     // TODO change type of formGroup to be derived form SubFormGroup / SubFormArray then remove as any
-    // inject the component into the SubFormGroup / SubFormArray
-    const subForm = ((this.formGroup as unknown) as SubFormGroup<ControlInterface, FormInterface>);
+    // connect the sub form component to the SubFormGroup / SubFormArray
+    const subForm = (this.formGroup as unknown) as SubFormGroup<ControlInterface, FormInterface>;
     subForm.setSubForm(this);
 
     const controls = this.getFormControls();
@@ -94,22 +103,53 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
 
     const options = this.getFormGroupControlOptions() as AbstractControlOptions;
 
-    // TODO implement validator handling that inlcudes grabbing what was set in the parent
-    if(subForm.parentValidatorOrOpts){
+    const validators: ValidatorFn[] = [];
+    const asyncValidators: AsyncValidatorFn[] = [];
 
+    // get validators that were passed into the sub form group on the parent
+    if (subForm.parentValidatorOrOpts) {
+      const validator = coerceToValidator(subForm.parentValidatorOrOpts);
+      if (validator) {
+        validators.push(validator);
+      }
     }
 
+    // get async validators that were passed into the sub form group on the parent
+    if (subForm.parentAsyncValidator) {
+      const validator = coerceToAsyncValidator(subForm.parentAsyncValidator);
+      if (validator) {
+        asyncValidators.push(validator);
+      }
+    }
+
+    // handle AbstractControlOptions from getFormGroupControlOptions
     if (options) {
-      if (options.validators) {
-        this.formGroup.setValidators(options.validators);
-      }
-      if (options.asyncValidators) {
-        this.formGroup.setAsyncValidators(options.asyncValidators);
-      }
       if (options.updateOn) {
         // sadly there is no public metohd that lets us change the update strategy of an already created FormGroup
         (this.formGroup as any)._setUpdateStrategy(options.updateOn);
       }
+
+      if (options.validators) {
+        const validator = coerceToValidator(options.validators);
+        if (validator) {
+          validators.push(validator);
+        }
+      }
+
+      if (options.asyncValidators) {
+        const validator = coerceToAsyncValidator(options.asyncValidators);
+        if (validator) {
+          asyncValidators.push(validator);
+        }
+      }
+    }
+
+    // set validators / async validators on sub form group
+    if (validators.length > 0) {
+      this.formGroup.setValidators(validators);
+    }
+    if (asyncValidators.length > 0) {
+      this.formGroup.setAsyncValidators(asyncValidators);
     }
 
     // if the form has default values, they should be applied straight away
@@ -118,7 +158,7 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
     // get default values for reset, if null fallback to undefined as there si a difference when calling reset
     const transformedValue = this.transformFromFormGroup(defaultValues as FormInterface) || undefined;
     // since this is the initial setting of form values do NOT emit an event
-    
+
     this.formGroup.reset(transformedValue, { onlySelf: true, emitEvent: false });
 
     // check if this needs to be called after reset was called
