@@ -2,12 +2,17 @@ import { AbstractControlOptions, AsyncValidatorFn, FormGroup, ValidatorFn } from
 import { map } from 'rxjs/operators';
 
 import { NgxSubFormComponent } from './ngx-sub-form.component';
+import { Observable } from 'rxjs';
 
 export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
   private subForm!: NgxSubFormComponent<TControl, TForm>;
   private transformToFormGroup!: NgxSubFormComponent<TControl, TForm>['transformToFormGroup'];
   private transformFromFormGroup!: NgxSubFormComponent<TControl, TForm>['transformFromFormGroup'];
   private getDefaultValues!: NgxSubFormComponent<TControl, TForm>['getDefaultValues'];
+
+  // fields we have to reimplement since super cannot be used
+  private _valueChanges!: Observable<any>;
+  private _value: any;
 
   constructor(
     validatorOrOpts?: ValidatorFn | ValidatorFn[] | AbstractControlOptions | null,
@@ -24,14 +29,17 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
   }
 
   get valueChanges() {
-    return super.valueChanges.pipe(map(value => this.transformFromFormGroup(value)));
+    return this._valueChanges.pipe(map(value => this.transformFromFormGroup(value)));
   }
   set valueChanges(value) {
-    (super.valueChanges as any) = value;
+    this._valueChanges = value;
   }
 
   get value() {
-    return this.transformFromFormGroup(super.value);
+    return this.transformFromFormGroup(this._value);
+  }
+  set value(value) {
+    this._value = value;
   }
 
   getRawValue(): any {
