@@ -1,23 +1,22 @@
-import { OnInit } from '@angular/core';
+import { OnInit, OnDestroy } from '@angular/core';
 import { NgxRootFormComponent } from './ngx-root-form.component';
+import { takeUntilDestroyed } from './ngx-sub-form-utils';
+import { filter, tap } from 'rxjs/operators';
+
+type FormGroupStatus = 'DISABLED' | 'PENDING' | 'INVALID' | 'VALID';
 
 export abstract class NgxAutomaticRootFormComponent<ControlInterface, FormInterface = ControlInterface>
   extends NgxRootFormComponent<ControlInterface, FormInterface>
-  implements OnInit {
-  /** @internal */
-  protected onRegisterOnChangeHook(data: ControlInterface | null) {
-    if (!super.onRegisterOnChangeHook(data)) {
-      return false;
-    }
+  implements OnInit, OnDestroy {
+  ngOnInit() {
+    super.ngOnInit();
 
-    if (this.formGroup) {
-      this.formGroup.markAsPristine();
-
-      if (this.formGroup.valid) {
-        this.manualSave();
-      }
-    }
-
-    return true;
+    this.formGroup.statusChanges
+      .pipe(
+        takeUntilDestroyed(this),
+        filter((status: FormGroupStatus) => status === 'VALID'),
+        tap(() => this.manualSave()),
+      )
+      .subscribe();
   }
 }

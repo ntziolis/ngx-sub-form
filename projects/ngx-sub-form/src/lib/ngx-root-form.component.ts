@@ -23,28 +23,20 @@ export abstract class NgxRootFormComponent<ControlInterface, FormInterface = Con
   /** @internal */
   protected _dataOutput$: Subject<ControlInterface> = new Subject();
 
-  @Input()
-  public set disabled(shouldDisable: boolean | undefined) {
-    this.setDisabledState(shouldDisable);
-  }
-
   protected emitInitialValueOnInit = false;
   protected emitNullOnDestroy = false;
 
   protected dataValue: ControlInterface | null = null;
 
   public ngOnInit(): void {
-    // we need to manually call registerOnChange because that function
-    // handles most of the logic from NgxSubForm and when it's called
-    // as a ControlValueAccessor that function is called by Angular itself
-    this.registerOnChange(data => this.onRegisterOnChangeHook(data));
+    super.ngOnInit();
 
     this.dataInput$
       .pipe(
         filter(newValue => !isEqual(newValue, this.formGroup.value)),
         tap(newValue => {
           if (!isNullOrUndefined(newValue)) {
-            this.writeValue(newValue);
+            this.formGroup.patchValue(newValue);
           }
         }),
         takeUntilDestroyed(this),
@@ -76,11 +68,6 @@ export abstract class NgxRootFormComponent<ControlInterface, FormInterface = Con
     this.dataInput$.next(data);
   }
 
-  public writeValue(obj: Required<ControlInterface> | null): void {
-    this.dataValue = obj;
-    super.writeValue(obj);
-  }
-
   protected transformToFormGroup(
     obj: ControlInterface | null,
     defaultValues: Partial<FormInterface> | null,
@@ -93,6 +80,7 @@ export abstract class NgxRootFormComponent<ControlInterface, FormInterface = Con
   }
 
   public manualSave(): void {
+    this.dataValue = this.formGroup.value as any;
     if (!isNullOrUndefined(this.dataValue) && this.formGroup.valid) {
       this._dataOutput$.next(this.dataValue);
     }
