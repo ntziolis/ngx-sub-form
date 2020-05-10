@@ -4,6 +4,8 @@ import { BehaviorSubject, Subject } from 'rxjs';
 import { filter, tap } from 'rxjs/operators';
 import { NgxSubFormRemapComponent } from './ngx-sub-form.component';
 import { takeUntilDestroyed, isNullOrUndefined } from './ngx-sub-form-utils';
+import { SubFormGroup } from './sub-form-group';
+import { FormGroup } from '@angular/forms';
 
 export abstract class NgxRootFormComponent<ControlInterface, FormInterface = ControlInterface>
   extends NgxSubFormRemapComponent<ControlInterface, FormInterface>
@@ -27,6 +29,11 @@ export abstract class NgxRootFormComponent<ControlInterface, FormInterface = Con
   protected emitNullOnDestroy = false;
 
   protected dataValue: ControlInterface | null = null;
+
+  constructor() {
+    super();
+    this.formGroup = new SubFormGroup<ControlInterface, FormInterface>({}) as any;
+  }
 
   public ngOnInit(): void {
     super.ngOnInit();
