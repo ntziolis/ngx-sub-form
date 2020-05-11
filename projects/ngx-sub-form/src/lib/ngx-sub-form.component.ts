@@ -236,8 +236,8 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
 
   // when getDefaultValues is defined, you do not need to specify the default values
   // in your form (the ones defined within the `getFormControls` method)
-  protected getDefaultValues(): Partial<FormInterface> | null {
-    return null;
+  protected getDefaultValues(): Partial<FormInterface> {
+    return {};
   }
 
   public handleFormArrayControls(obj: any) {
