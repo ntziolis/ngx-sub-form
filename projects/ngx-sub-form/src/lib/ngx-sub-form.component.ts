@@ -87,6 +87,11 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
   protected abstract getFormControls(): Controls<FormInterface>;
 
   ngOnInit() {
+    // provide a descriptive error message when the declaration the parent for was incorrect
+    if (!(this.formGroup instanceof SubFormGroup)) {
+      throw new Error('The subForm input needs to be of type SubFormGroup.');
+    }
+
     // TODO change type of formGroup to be derived form SubFormGroup / SubFormArray then remove as any
     // connect the sub form component to the SubFormGroup / SubFormArray
     const subForm = (this.formGroup as unknown) as SubFormGroup<ControlInterface, FormInterface>;
