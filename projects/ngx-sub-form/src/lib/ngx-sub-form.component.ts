@@ -92,11 +92,6 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
       throw new Error('The subForm input needs to be of type SubFormGroup.');
     }
 
-    // TODO change type of formGroup to be derived form SubFormGroup / SubFormArray then remove as any
-    // connect the sub form component to the SubFormGroup / SubFormArray
-    const subForm = (this.formGroup as unknown) as SubFormGroup<ControlInterface, FormInterface>;
-    subForm.setSubForm(this);
-
     const controls = this.getFormControls();
     for (const key in controls) {
       if (controls.hasOwnProperty(key)) {
@@ -104,6 +99,12 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
         this.formGroup.addControl(key, control);
       }
     }
+
+    // TODO change type of formGroup to be derived form SubFormGroup / SubFormArray then remove as any
+    // connect the sub form component to the SubFormGroup / SubFormArray
+    const subForm = (this.formGroup as unknown) as SubFormGroup<ControlInterface, FormInterface>;
+    subForm.setSubForm(this);
+
     this.controlKeys = (Object.keys(controls) as unknown) as (keyof FormInterface)[];
 
     const options = this.getFormGroupControlOptions() as AbstractControlOptions;

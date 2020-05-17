@@ -5,6 +5,7 @@ import { NgxSubFormComponent } from './ngx-sub-form.component';
 export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
   private subForm!: NgxSubFormComponent<TControl, TForm>;
 
+  private initalValue!: Partial<TControl>;
   private transformToFormGroup!: NgxSubFormComponent<TControl, TForm>['transformToFormGroup'];
   private transformFromFormGroup!: NgxSubFormComponent<TControl, TForm>['transformFromFormGroup'];
   private getDefaultValues!: NgxSubFormComponent<TControl, TForm>['getDefaultValues'];
@@ -33,6 +34,11 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
 
     this.transformFromFormGroup = this.subForm['transformFromFormGroup'];
     this.getDefaultValues = this.subForm['getDefaultValues'];
+
+    // this value is set when the a value was passed into a root form
+    if (this.initalValue) {
+      this.reset(this.initalValue, { onlySelf: true, emitEvent: false });
+    }
   }
 
   getRawValue(): any {
@@ -50,6 +56,15 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
   }
 
   patchValue(value: Partial<TControl>, options: { onlySelf?: boolean; emitEvent?: boolean } = {}): void {
+    // this happens when the parent sets a value but the sub-form-component has not tun ngOnInit yet
+    if (!this.transformToFormGroup) {
+      if (value) {
+        this.initalValue = value;
+      }
+
+      return;
+    }
+
     // TODO check if providing {} does work, as we do not want to override existing values with default values
     // It might be that patchValue cannot be used as we dont have control over how transformToFormGroup is implemented
     // it would have to be done in a way that returns a partial TForm which right now is not how the method signatures are defined
