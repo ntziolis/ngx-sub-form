@@ -62,6 +62,7 @@ export class DroidProductComponent extends NgxSubFormRemapComponent<OneDroid, On
         return formValue.astromechDroid;
       case DroidType.ASSASSIN:
         return formValue.assassinDroid;
+      case undefined:
       case null:
         return null;
       default:

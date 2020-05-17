@@ -64,6 +64,7 @@ export class VehicleProductComponent extends NgxSubFormRemapComponent<OneVehicle
         return formValue.speeder;
       case VehicleType.SPACESHIP:
         return formValue.spaceship;
+      case undefined:
       case null:
         return null;
       default:
