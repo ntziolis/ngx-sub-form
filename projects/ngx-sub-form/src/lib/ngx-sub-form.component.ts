@@ -165,7 +165,9 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
     const transformedValue = this.transformFromFormGroup(defaultValues as FormInterface) || undefined;
     // since this is the initial setting of form values do NOT emit an event
 
-    this.formGroup.reset(transformedValue, { onlySelf: true, emitEvent: false });
+    const mergedValues = { ...transformedValue, ...(subForm.initalValue || {}) };
+
+    this.formGroup.reset(mergedValues, { onlySelf: true, emitEvent: false });
 
     // check if this needs to be called after reset was called
     this.formGroup.updateValueAndValidity({ onlySelf: true, emitEvent: false });

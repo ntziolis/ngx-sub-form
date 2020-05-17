@@ -5,7 +5,7 @@ import { NgxSubFormComponent } from './ngx-sub-form.component';
 export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
   private subForm!: NgxSubFormComponent<TControl, TForm>;
 
-  private initalValue!: Partial<TControl>;
+  public initalValue!: Partial<TControl>;
   private transformToFormGroup!: NgxSubFormComponent<TControl, TForm>['transformToFormGroup'];
   private transformFromFormGroup!: NgxSubFormComponent<TControl, TForm>['transformFromFormGroup'];
   private getDefaultValues!: NgxSubFormComponent<TControl, TForm>['getDefaultValues'];
@@ -31,14 +31,8 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
     this.transformToFormGroup = (obj: TControl | null, defaultValues: Partial<TForm>) => {
       return this.subForm['transformToFormGroup'](obj, defaultValues) || ({} as TForm);
     };
-
     this.transformFromFormGroup = this.subForm['transformFromFormGroup'];
     this.getDefaultValues = this.subForm['getDefaultValues'];
-
-    // this value is set when the a value was passed into a root form
-    if (this.initalValue) {
-      this.reset(this.initalValue, { onlySelf: true, emitEvent: false });
-    }
   }
 
   getRawValue(): any {
@@ -57,11 +51,10 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
 
   patchValue(value: Partial<TControl>, options: { onlySelf?: boolean; emitEvent?: boolean } = {}): void {
     // this happens when the parent sets a value but the sub-form-component has not tun ngOnInit yet
-    if (!this.transformToFormGroup) {
+    if (!this.subForm) {
       if (value) {
         this.initalValue = value;
       }
-
       return;
     }
 
@@ -86,6 +79,9 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
     // then again from sub-form inside ngOnInit after subForm was set
     // so when can safely ignore resets prior to subForm being set
     if (!this.subForm) {
+      if (value) {
+        this.initalValue = value;
+      }
       return;
     }
 
