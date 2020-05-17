@@ -95,17 +95,19 @@
         </mat-select>
       </mat-form-field>
 
+      <!-- TODO: check why this fails
+
       <div [ngSwitch]="formGroupValues.listingType">
         <app-droid-product
           *ngSwitchCase="ListingType.DROID"
-          [formControlName]="formControlNames.droidProduct"
+          [subForm]="formGroupControls.droidProduct"
         ></app-droid-product>
 
         <app-vehicle-product
           *ngSwitchCase="ListingType.VEHICLE"
-          [formControlName]="formControlNames.vehicleProduct"
+          [subForm]="formGroupControls.vehicleProduct"
         ></app-vehicle-product>
-      </div>
+      </div> -->
     </form>
   </mat-card-content>
   <mat-card-actions>

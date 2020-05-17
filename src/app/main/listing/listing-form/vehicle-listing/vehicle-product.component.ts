@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
-import { Controls, NgxSubFormRemapComponent, subformComponentProviders } from 'ngx-sub-form';
+import { Controls, NgxSubFormRemapComponent, subformComponentProviders, SubFormGroup } from 'ngx-sub-form';
 import { OneVehicle, Spaceship, Speeder, VehicleType } from 'src/app/interfaces/vehicle.interface';
 import { UnreachableCase } from 'src/app/shared/utils';
 
@@ -21,8 +21,8 @@ export class VehicleProductComponent extends NgxSubFormRemapComponent<OneVehicle
 
   protected getFormControls(): Controls<OneVehicleForm> {
     return {
-      speeder: new FormControl(null),
-      spaceship: new FormControl(null),
+      speeder: new SubFormGroup(),
+      spaceship: new SubFormGroup(),
       vehicleType: new FormControl(null, { validators: [Validators.required] }),
     };
   }

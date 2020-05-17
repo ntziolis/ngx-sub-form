@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
-import { Controls, NgxSubFormComponent, subformComponentProviders } from 'ngx-sub-form';
+import { Controls, NgxSubFormComponent, subformComponentProviders, SubFormGroup } from 'ngx-sub-form';
 import { Speeder, VehicleType } from 'src/app/interfaces/vehicle.interface';
 
 @Component({
@@ -9,18 +9,18 @@ import { Speeder, VehicleType } from 'src/app/interfaces/vehicle.interface';
   styleUrls: ['./speeder.component.scss'],
   providers: subformComponentProviders(SpeederComponent),
 })
-export class SpeederComponent extends NgxSubFormComponent<Speeder> {
+export class SpeederComponent extends NgxSubFormComponent<Speeder>  {
   protected getFormControls(): Controls<Speeder> {
     return {
       color: new FormControl(null, { validators: [Validators.required] }),
       canFire: new FormControl(null, { validators: [Validators.required] }),
-      crewMembers: new FormControl(null, { validators: [Validators.required] }),
+      crewMembers: new SubFormGroup({ validators: [Validators.required] }),
       vehicleType: new FormControl(null, { validators: [Validators.required] }),
       maximumSpeed: new FormControl(null, { validators: [Validators.required] }),
     };
   }
 
-  protected getDefaultValues(): Partial<Speeder> | null {
+  protected getDefaultValues(): Partial<Speeder> {
     return { vehicleType: VehicleType.SPEEDER, canFire: false };
   }
 }

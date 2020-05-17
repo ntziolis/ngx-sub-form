@@ -7,6 +7,7 @@ import {
   ArrayPropertyKey,
   ArrayPropertyValue,
   NgxFormWithArrayControls,
+  SubFormGroup
 } from 'ngx-sub-form';
 import { CrewMember } from '../../../../../interfaces/crew-member.interface';
 
@@ -28,7 +29,7 @@ export class CrewMembersComponent extends NgxSubFormRemapComponent<CrewMember[],
     };
   }
 
-  public getDefaultValues(): Partial<CrewMembersForm> | null {
+  public getDefaultValues(): Partial<CrewMembersForm> {
     return {
       crewMembers: [],
     };
@@ -64,12 +65,21 @@ export class CrewMembersComponent extends NgxSubFormRemapComponent<CrewMember[],
     key: ArrayPropertyKey<CrewMembersForm> | undefined,
     value: ArrayPropertyValue<CrewMembersForm>,
   ): FormControl {
+    // TODO figure out how to handle initalizing new SubFormGroups with values in array case
+    // switch (key) {
+    //   // note: the following string is type safe based on your form properties!
+    //   case 'crewMembers':
+    //     return new FormControl(value, [Validators.required]);
+    //   default:
+    //     return new FormControl(value);
+    // }
+
     switch (key) {
       // note: the following string is type safe based on your form properties!
       case 'crewMembers':
-        return new FormControl(value, [Validators.required]);
+        return new SubFormGroup([Validators.required]) as any;
       default:
-        return new FormControl(value);
+        return new SubFormGroup() as any;
     }
   }
 }

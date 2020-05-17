@@ -1,5 +1,11 @@
+ <!-- TODO: figure out why this does not exist yet, could eb that disbaled is a standard property in a later version
 <app-listing-form
   [disabled]="false"
+  [listing]="listing$ | async"
+  (listingUpdated)="upsertListing($event)"
+></app-listing-form> -->
+
+<app-listing-form
   [listing]="listing$ | async"
   (listingUpdated)="upsertListing($event)"
 ></app-listing-form>

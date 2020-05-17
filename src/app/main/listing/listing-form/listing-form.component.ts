@@ -7,6 +7,7 @@ import {
   // NGX_SUB_FORM_HANDLE_VALUE_CHANGES_RATE_STRATEGIES,
   DataInput,
   NgxRootFormComponent,
+  SubFormGroup,
 } from 'ngx-sub-form';
 import { tap } from 'rxjs/operators';
 import { ListingType, OneListing } from 'src/app/interfaces/listing.interface';
@@ -54,8 +55,8 @@ export class ListingFormComponent extends NgxRootFormComponent<OneListing, OneLi
 
   protected getFormControls(): Controls<OneListingForm> {
     return {
-      vehicleProduct: new FormControl(null),
-      droidProduct: new FormControl(null),
+      vehicleProduct: new SubFormGroup(),
+      droidProduct: new SubFormGroup(),
       listingType: new FormControl(null, Validators.required),
       id: new FormControl(null, Validators.required),
       title: new FormControl(null, Validators.required),
@@ -72,6 +73,7 @@ export class ListingFormComponent extends NgxRootFormComponent<OneListing, OneLi
         return droidProduct ? { product: droidProduct, listingType, ...commonValues } : null;
       case ListingType.VEHICLE:
         return vehicleProduct ? { product: vehicleProduct, listingType, ...commonValues } : null;
+      case undefined:
       case null:
         return null;
       default:

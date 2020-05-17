@@ -6,7 +6,7 @@
     [formArrayName]="formControlNames.crewMembers"
     *ngFor="let crewMember of formGroupControls.crewMembers.controls; let i = index"
   >
-    <app-crew-member [formControl]="crewMember"></app-crew-member>
+    <app-crew-member [subForm]="crewMember"></app-crew-member>
 
     <button mat-mini-fab color="primary" (click)="removeCrewMember(i)" [disabled]="formGroup.disabled">
       <mat-icon>delete</mat-icon>

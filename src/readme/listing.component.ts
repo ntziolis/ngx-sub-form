@@ -3,7 +3,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { OneDroid } from '../app/interfaces/droid.interface';
 import { OneListing } from '../app/interfaces/listing.interface';
 import { OneVehicle } from '../app/interfaces/vehicle.interface';
-import { Controls, DataInput, NgxAutomaticRootFormComponent } from 'ngx-sub-form';
+import { Controls, DataInput, NgxAutomaticRootFormComponent, SubFormGroup } from 'ngx-sub-form';
 
 enum ListingType {
   VEHICLE = 'Vehicle',
@@ -46,8 +46,8 @@ export class ListingComponent extends NgxAutomaticRootFormComponent<OneListing, 
 
   protected getFormControls(): Controls<OneListingForm> {
     return {
-      vehicleProduct: new FormControl(null),
-      droidProduct: new FormControl(null),
+      vehicleProduct: new SubFormGroup(),
+      droidProduct: new SubFormGroup(),
       listingType: new FormControl(null, Validators.required),
       id: new FormControl(null, Validators.required),
       title: new FormControl(null, Validators.required),

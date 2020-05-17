@@ -18,8 +18,8 @@
   </mat-form-field>
 
   <div [ngSwitch]="formGroupValues.vehicleType">
-    <app-spaceship *ngSwitchCase="VehicleType.SPACESHIP" [formControlName]="formControlNames.spaceship"></app-spaceship>
+    <app-spaceship *ngSwitchCase="VehicleType.SPACESHIP" [subForm]="formGroupControls.spaceship"></app-spaceship>
 
-    <app-speeder *ngSwitchCase="VehicleType.SPEEDER" [formControlName]="formControlNames.speeder"></app-speeder>
+    <app-speeder *ngSwitchCase="VehicleType.SPEEDER" [subForm]="formGroupControls.speeder"></app-speeder>
   </div>
 </fieldset>
