@@ -36,27 +36,10 @@ export abstract class NgxRootFormComponent<ControlInterface, FormInterface = Con
   }
 
   public ngOnInit(): void {
-    super.ngOnInit();
-
     this.dataInput$
       .pipe(
         takeUntilDestroyed(this),
         filter(newValue => !isEqual(newValue, this.formGroup.value)),
-        tap(() => {
-          // TODO when the form is filled with a new value
-          // the underlying SubFormGroups need to be reset
-          // not sure yet theer are multiple path was
-          // one would be to remove all sub form groups and somehow make sure they get recreated
-          // this would be in line with how the old ngx-sub-form was doing it
-          // main difference is that it was hidden via control value accessor
-          // now we are attached directly to the form group
-          //
-          // another option would be to move initialization of SUbFormGroup into ngOnCHanges
-          // monitoring changes on [subForm]
-          // this feels like the right path right at first sight
-          // tzhe other advantage is that most peole do not use ngOnChanges
-          // meanig they cant forget to call super.ngOnChanges when overwriting
-        }),
         tap(newValue => {
           if (!isNullOrUndefined(newValue)) {
             this.formGroup.patchValue(newValue);

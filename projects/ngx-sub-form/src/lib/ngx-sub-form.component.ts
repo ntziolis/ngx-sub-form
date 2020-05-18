@@ -1,4 +1,4 @@
-import { Input, OnDestroy, OnInit } from '@angular/core';
+import { Input, OnDestroy, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import {
   AbstractControl,
   AbstractControlOptions,
@@ -31,7 +31,7 @@ type FilterControlFunction<FormInterface> = (
 ) => boolean;
 
 export abstract class NgxSubFormComponent<ControlInterface, FormInterface = ControlInterface>
-  implements OnInit, OnDestroy {
+  implements OnDestroy, OnChanges {
   public get formGroupControls(): ControlsType<FormInterface> {
     // @note form-group-undefined we need the return null here because we do not want to expose the fact that
     // the form can be undefined, it's handled internally to contain an Angular bug
@@ -86,11 +86,21 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
   // can't define them directly
   protected abstract getFormControls(): Controls<FormInterface>;
 
-  ngOnInit() {
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['dataInput'] === undefined && changes['formGroup'] === undefined) {
+      return;
+    }
+
     // provide a descriptive error message when the declaration the parent for was incorrect
     if (!(this.formGroup instanceof SubFormGroup || this.formGroup instanceof SubFormArray)) {
       throw new Error('The subForm input needs to be of type SubFormGroup.');
     }
+
+    const oldControls = (this.formGroup.controls as unknown) as AbstractControl[];
+
+    Object.keys(this.formGroup.controls).forEach(key => {
+      this.formGroup.removeControl(key);
+    });
 
     // TODO change type of formGroup to be derived form SubFormGroup / SubFormArray then remove as any
     // connect the sub form component to the SubFormGroup / SubFormArray
@@ -175,7 +185,7 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
     // since this is the initial setting of form values do NOT emit an event
 
     let mergedValues: ControlInterface;
-    if(Array.isArray(transformedValue)){
+    if (Array.isArray(transformedValue)) {
       mergedValues = subForm.controlValue;
     } else {
       mergedValues = { ...transformedValue, ...(subForm.controlValue || {}) } as ControlInterface;
@@ -266,8 +276,7 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
   }
 
   public handleFormArrayControls(obj: any) {
-
-    if(!this.formGroup){
+    if (!this.formGroup) {
       debugger;
     }
     Object.entries(obj).forEach(([key, value]) => {
