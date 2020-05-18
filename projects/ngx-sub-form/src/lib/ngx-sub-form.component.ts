@@ -21,7 +21,7 @@ import {
   isNullOrUndefined,
 } from './ngx-sub-form-utils';
 import { FormGroupOptions, NgxFormWithArrayControls, TypedFormGroup } from './ngx-sub-form.types';
-import { SubFormGroup } from './sub-form-group';
+import { SubFormGroup, patchFormControl } from './sub-form-group';
 
 type MapControlFunction<FormInterface, MapValue> = (ctrl: AbstractControl, key: keyof FormInterface) => MapValue;
 type FilterControlFunction<FormInterface> = (
@@ -92,17 +92,26 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
       throw new Error('The subForm input needs to be of type SubFormGroup.');
     }
 
+    // TODO change type of formGroup to be derived form SubFormGroup / SubFormArray then remove as any
+    // connect the sub form component to the SubFormGroup / SubFormArray
+    const subForm = (this.formGroup as unknown) as SubFormGroup<ControlInterface, FormInterface>;
+
     const controls = this.getFormControls();
     for (const key in controls) {
       if (controls.hasOwnProperty(key)) {
         const control = controls[key];
+
+        // we need to write up the form controls with the sub form group
+        // this allows us to transform the sub form value to ControlInterface
+        // every time any of the form controls on the sub form change
+        if (control instanceof FormControl) {
+          patchFormControl(subForm as SubFormGroup<any>, control);
+        }
+
         this.formGroup.addControl(key, control);
       }
     }
 
-    // TODO change type of formGroup to be derived form SubFormGroup / SubFormArray then remove as any
-    // connect the sub form component to the SubFormGroup / SubFormArray
-    const subForm = (this.formGroup as unknown) as SubFormGroup<ControlInterface, FormInterface>;
     subForm.setSubForm(this);
 
     this.controlKeys = (Object.keys(controls) as unknown) as (keyof FormInterface)[];
@@ -165,7 +174,7 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
     const transformedValue = this.transformFromFormGroup(defaultValues as FormInterface) || undefined;
     // since this is the initial setting of form values do NOT emit an event
 
-    const mergedValues = { ...transformedValue, ...(subForm.initalValue || {}) };
+    const mergedValues = { ...transformedValue, ...(subForm.controlValue || {}) };
 
     this.formGroup.reset(mergedValues, { onlySelf: true, emitEvent: false });
 
