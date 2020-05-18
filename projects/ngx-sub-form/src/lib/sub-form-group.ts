@@ -1,5 +1,13 @@
 import { EventEmitter } from '@angular/core';
-import { AbstractControlOptions, AsyncValidatorFn, FormGroup, ValidatorFn, FormControl } from '@angular/forms';
+import {
+  AbstractControlOptions,
+  AsyncValidatorFn,
+  FormGroup,
+  ValidatorFn,
+  FormControl,
+  FormArray,
+  AbstractControl,
+} from '@angular/forms';
 
 import { NgxSubFormComponent } from './ngx-sub-form.component';
 
@@ -50,6 +58,7 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
   public readonly parentAsyncValidator: AsyncValidatorFn | AsyncValidatorFn[] | null | undefined;
 
   constructor(
+    value: Partial<TControl> | null,
     validatorOrOpts?: ValidatorFn | ValidatorFn[] | AbstractControlOptions | null,
     asyncValidator?: AsyncValidatorFn | AsyncValidatorFn[] | null,
     //@Optional() @Inject(SUB_FORM_COMPONENT_TOKEN) public parentSubForm?: NgxSubFormComponent<any>,
@@ -62,6 +71,8 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
     //     // only returns odd die sides
     //     get: function () { return (Math.random() * 6) | 1; }
     // });
+
+    this.controlValue = (value || undefined) as TControl;
 
     this._valueChanges = new CustomerEventEmitter();
 
@@ -100,16 +111,9 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
     this.subForm = subForm;
     this._valueChanges.setSubForm(subForm);
 
-    // TODO check if this comparison works properly
     if (this.root === this) {
       this.isRoot = true;
     }
-
-    // another way would be to check if the provided sub form is a root
-    // but that means should there be multiple roots in a sub form tree this would yield incorrect results
-    // if(subForm instanceof NgxRootFormComponent){
-    //   this.isRoot = true;
-    // }
 
     // transform to form group should never return null / undefined but {} instead
     this.transformToFormGroup = (obj: TControl | null, defaultValues: Partial<TForm>) => {
@@ -123,48 +127,6 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
     const rawValue = super.getRawValue();
     return this.transformFromFormGroup(rawValue);
   }
-
-  // setValue(value: TControl, options: { onlySelf?: boolean; emitEvent?: boolean } = {}): void {
-  //   if (!this.subForm) {
-  //     if (value) {
-  //       this.initalValue = value;
-  //     }
-  //     return;
-  //   }
-
-  //   const transformedValue = (this.transformToFormGroup(value, this.getDefaultValues()) as unknown) as TControl;
-
-  //   // TODO figure out how to handle for arrays
-  //   // this.subForm.handleFormArrayControls(transformedValue);
-
-  //   super.setValue(transformedValue, options);
-  // }
-
-  // patchValue(value: Partial<TControl>, options: { onlySelf?: boolean; emitEvent?: boolean } = {}): void {
-  //   // this happens when the parent sets a value but the sub-form-component has not tun ngOnInit yet
-  //   if (!this.subForm) {
-  //       this.initalValue = value;
-  //       return;
-  //   }
-
-  //   super.patchValue(value)
-  // }
-
-  // setValue(value: TControl, options: { onlySelf?: boolean; emitEvent?: boolean } = {}): void {
-  //   if (!this.subForm) {
-  //     if (value) {
-  //       this.initalValue = value;
-  //     }
-  //     return;
-  //   }
-
-  //   const transformedValue = (this.transformToFormGroup(value, this.getDefaultValues()) as unknown) as TControl;
-
-  //   // TODO figure out how to handle for arrays
-  //   // this.subForm.handleFormArrayControls(transformedValue);
-
-  //   super.setValue(transformedValue, options);
-  // }
 
   setValue(value: TControl, options: { onlySelf?: boolean; emitEvent?: boolean } = {}): void {
     // this happens when the parent sets a value but the sub-form-component has not tun ngOnInit yet
@@ -183,7 +145,7 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
     const transformedValue = (this.transformToFormGroup((value as unknown) as TControl, {}) as unknown) as TForm;
 
     // TODO figure out how to handle for arrays
-    // this.subForm.handleFormArrayControls(transformedValue);
+    this.subForm.handleFormArrayControls(this.controlValue);
 
     super.patchValue(transformedValue, options);
   }
@@ -205,7 +167,7 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
     const transformedValue = (this.transformToFormGroup((value as unknown) as TControl, {}) as unknown) as TForm;
 
     // TODO figure out how to handle for arrays
-    // this.subForm.handleFormArrayControls(transformedValue);
+    this.subForm.handleFormArrayControls(this.controlValue);
 
     super.patchValue(transformedValue, options);
   }
@@ -221,7 +183,12 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
       return;
     }
 
-    this.controlValue = { ...this.controlValue, ...value };
+    // special handling for array sub-forms
+    if (Array.isArray(value)) {
+      this.controlValue = (value || []) as any;
+    } else {
+      this.controlValue = { ...this.controlValue, ...value };
+    }
 
     const formValue = (this.transformToFormGroup(
       (value as unknown) as TControl,
@@ -229,7 +196,7 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
     ) as unknown) as TForm;
 
     // TODO figure out how to handle for arrays
-    //this.subForm.handleFormArrayControls(transformedValue);
+    this.subForm.handleFormArrayControls(this.controlValue);
 
     super.reset(formValue, options);
 
@@ -240,7 +207,18 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
     if (!this.subForm) {
       return;
     }
-    const controlValue = (this.transformFromFormGroup(this.subForm.formGroup.value || {}) as unknown) as TControl;
+
+    const formValue = {} as any;
+    for (const [key, value] of Object.entries(this.subForm.formGroup.controls)) {
+      const control = value as AbstractControl;
+      if (control instanceof SubFormGroup) {
+        formValue[key] = control.controlValue;
+      } else {
+        formValue[key] = control.value;
+      }
+    }
+
+    const controlValue = (this.transformFromFormGroup(formValue || ({} as TForm)) as unknown) as TControl;
 
     this.controlValue = controlValue;
 
@@ -248,7 +226,18 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
       return;
     }
 
-    (this.parent as any).updateValue(options);
+    let parentSubFromGroup: any;
+    // if (this.parent instanceof FormArray) {
+    //   parentSubFromGroup = this.parent.parent;
+    // } else {
+    parentSubFromGroup = this.parent;
+    //}
+
+    if (!parentSubFromGroup) {
+      debugger;
+    }
+
+    parentSubFromGroup.updateValue(options);
     //this.updateValueAndValidity(options);
   }
 }
@@ -262,4 +251,73 @@ export function patchFormControl(subFormGroup: SubFormGroup<any>, control: FormC
     setValue(value, options);
     subFormGroup.updateValue(options);
   };
+}
+
+export class SubFormArray<TControl, TForm = TControl> extends FormArray {
+  private subForm!: NgxSubFormComponent<TControl, TForm>;
+
+  private isRoot = false;
+  private _valueChanges: CustomerEventEmitter<TControl, TForm>;
+  public controlValue!: TControl[];
+  private transformToFormGroup!: NgxSubFormComponent<TControl, TForm>['transformToFormGroup'];
+  private transformFromFormGroup!: NgxSubFormComponent<TControl, TForm>['transformFromFormGroup'];
+  private getDefaultValues!: NgxSubFormComponent<TControl, TForm>['getDefaultValues'];
+
+  public readonly parentValidatorOrOpts: ValidatorFn | ValidatorFn[] | AbstractControlOptions | null | undefined;
+  public readonly parentAsyncValidator: AsyncValidatorFn | AsyncValidatorFn[] | null | undefined;
+
+  constructor(
+    subForm: NgxSubFormComponent<TControl, TForm>,
+    controls: AbstractControl[],
+    validatorOrOpts?: ValidatorFn | ValidatorFn[] | AbstractControlOptions | null,
+    asyncValidator?: AsyncValidatorFn | AsyncValidatorFn[] | null,
+  ) {
+    // its important to NOT set validators here as this will trigger calls to value before setSubForm was called
+    super(controls);
+
+    this._valueChanges = new CustomerEventEmitter();
+    (this.valueChanges as any) = this._valueChanges;
+
+    this.parentValidatorOrOpts = validatorOrOpts;
+    this.parentAsyncValidator = asyncValidator;
+
+    this.setSubForm(subForm);
+  }
+
+  setSubForm(subForm: NgxSubFormComponent<TControl, TForm>) {
+    this.subForm = subForm;
+    this._valueChanges.setSubForm(subForm);
+
+    // for some reason root is not properly set for form array
+    // on the other hand form array should never be root anyway so we can ignore thsi for now
+    // if (this.root === this) {
+    //   this.isRoot = true;
+    // }
+
+    // transform to form group should never return null / undefined but {} instead
+    this.transformToFormGroup = (obj: TControl | null, defaultValues: Partial<TForm>) => {
+      return this.subForm['transformToFormGroup'](obj, defaultValues) || ({} as TForm);
+    };
+    this.transformFromFormGroup = this.subForm['transformFromFormGroup'];
+    this.getDefaultValues = this.subForm['getDefaultValues'];
+  }
+
+  setValue(value: any, options: any) {
+    super.setValue(value, options);
+    ((this.subForm.formGroup as unknown) as SubFormGroup<any>).updateValue(options);
+  }
+
+  patchValue(value: any, options: any) {
+    super.patchValue(value, options);
+    ((this.subForm.formGroup as unknown) as SubFormGroup<any>).updateValue(options);
+  }
+
+  updateValue(options: any) {
+    if (!this.subForm) {
+      return;
+    }
+
+    (this.parent as any).updateValue(options);
+    //this.updateValueAndValidity(options);
+  }
 }

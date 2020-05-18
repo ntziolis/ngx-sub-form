@@ -21,7 +21,7 @@ import {
   isNullOrUndefined,
 } from './ngx-sub-form-utils';
 import { FormGroupOptions, NgxFormWithArrayControls, TypedFormGroup } from './ngx-sub-form.types';
-import { SubFormGroup, patchFormControl } from './sub-form-group';
+import { SubFormGroup, patchFormControl, SubFormArray } from './sub-form-group';
 
 type MapControlFunction<FormInterface, MapValue> = (ctrl: AbstractControl, key: keyof FormInterface) => MapValue;
 type FilterControlFunction<FormInterface> = (
@@ -88,7 +88,7 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
 
   ngOnInit() {
     // provide a descriptive error message when the declaration the parent for was incorrect
-    if (!(this.formGroup instanceof SubFormGroup)) {
+    if (!(this.formGroup instanceof SubFormGroup || this.formGroup instanceof SubFormArray)) {
       throw new Error('The subForm input needs to be of type SubFormGroup.');
     }
 
@@ -174,7 +174,15 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
     const transformedValue = this.transformFromFormGroup(defaultValues as FormInterface) || undefined;
     // since this is the initial setting of form values do NOT emit an event
 
-    const mergedValues = { ...transformedValue, ...(subForm.controlValue || {}) };
+    let mergedValues: ControlInterface;
+    if(Array.isArray(transformedValue)){
+      mergedValues = subForm.controlValue;
+    } else {
+      mergedValues = { ...transformedValue, ...(subForm.controlValue || {}) } as ControlInterface;
+    }
+
+    const formValue = this.transformToFormGroup(mergedValues, {});
+    this.handleFormArrayControls(formValue);
 
     this.formGroup.reset(mergedValues, { onlySelf: true, emitEvent: false });
 
@@ -258,6 +266,10 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
   }
 
   public handleFormArrayControls(obj: any) {
+
+    if(!this.formGroup){
+      debugger;
+    }
     Object.entries(obj).forEach(([key, value]) => {
       if (this.formGroup.get(key) instanceof FormArray && Array.isArray(value)) {
         const formArray: FormArray = this.formGroup.get(key) as FormArray;
@@ -271,10 +283,13 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
         }
 
         for (let i = formArray.length; i < value.length; i++) {
+          // TODO decide if this is the best way forward as it implies only a single form array on a sub form
           if (this.formIsFormWithArrayControls()) {
             formArray.insert(i, this.createFormArrayControl(key as ArrayPropertyKey<FormInterface>, value[i]));
           } else {
-            formArray.insert(i, new FormControl(value[i]));
+            const control = new FormControl(value[i]);
+            patchFormControl((this.formGroup as unknown) as SubFormGroup<any>, control);
+            formArray.insert(i, control);
           }
         }
       }

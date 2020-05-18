@@ -39,22 +39,22 @@ export abstract class NgxRootFormComponent<ControlInterface, FormInterface = Con
     super.ngOnInit();
 
     this.dataInput$
-      .pipe(
+      .pipe(        
+        takeUntilDestroyed(this),
         filter(newValue => !isEqual(newValue, this.formGroup.value)),
         tap(newValue => {
           if (!isNullOrUndefined(newValue)) {
             this.formGroup.patchValue(newValue);
           }
         }),
-        takeUntilDestroyed(this),
       )
       .subscribe();
 
     this._dataOutput$
-      .pipe(
+      .pipe(        
+        takeUntilDestroyed(this),
         filter(() => this.formGroup.valid),
         tap(value => this.dataOutput.emit(value)),
-        takeUntilDestroyed(this),
       )
       .subscribe();
   }
@@ -87,7 +87,7 @@ export abstract class NgxRootFormComponent<ControlInterface, FormInterface = Con
   }
 
   public manualSave(): void {
-    this.dataValue = this.formGroup.value as any;
+    this.dataValue = (this.formGroup as any).controlValue as ControlInterface;
     if (!isNullOrUndefined(this.dataValue) && this.formGroup.valid) {
       this._dataOutput$.next(this.dataValue);
     }
