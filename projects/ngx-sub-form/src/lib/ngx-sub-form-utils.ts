@@ -1,15 +1,8 @@
-import {
-  ControlValueAccessor,
-  NG_VALUE_ACCESSOR,
-  NG_VALIDATORS,
-  ValidationErrors,
-  FormControl,
-  FormArray,
-  AbstractControl,
-} from '@angular/forms';
-import { InjectionToken, Type, forwardRef, OnDestroy } from '@angular/core';
+import { forwardRef, OnDestroy, Provider } from '@angular/core';
+import { AbstractControl, FormArray, NG_VALIDATORS, NG_VALUE_ACCESSOR, ValidationErrors } from '@angular/forms';
 import { Observable, Subject, timer } from 'rxjs';
-import { takeUntil, debounce } from 'rxjs/operators';
+import { debounce, takeUntil } from 'rxjs/operators';
+
 import { SUB_FORM_COMPONENT_TOKEN } from './ngx-sub-form-tokens';
 import { NgxSubFormComponent } from './ngx-sub-form.component';
 
@@ -40,13 +33,7 @@ export type ArrayPropertyValue<T, K extends ArrayPropertyKey<T> = ArrayPropertyK
   ? U
   : never;
 
-export function subformComponentProviders(
-  component: any,
-): {
-  provide: InjectionToken<ControlValueAccessor>;
-  useExisting: Type<any>;
-  multi?: boolean;
-}[] {
+export function subformComponentProviders(component: any): Provider[] {
   return [
     {
       provide: NG_VALUE_ACCESSOR,
