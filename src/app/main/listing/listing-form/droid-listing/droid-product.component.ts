@@ -30,10 +30,10 @@ export class DroidProductComponent extends NgxSubFormRemapComponent<OneDroid, On
 
   protected getFormControls(): Controls<OneDroidForm> {
     return {
-      protocolDroid: new SubFormGroup(),
-      medicalDroid: new SubFormGroup(),
-      astromechDroid: new SubFormGroup(),
-      assassinDroid: new SubFormGroup(),
+      protocolDroid: new SubFormGroup(null),
+      medicalDroid: new SubFormGroup(null),
+      astromechDroid: new SubFormGroup(null),
+      assassinDroid: new SubFormGroup(null),
       droidType: new FormControl(null, { validators: [Validators.required] }),
     };
   }

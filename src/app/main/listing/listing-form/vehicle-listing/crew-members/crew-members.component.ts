@@ -1,14 +1,16 @@
 import { Component } from '@angular/core';
-import { FormArray, FormControl, Validators } from '@angular/forms';
+import { FormControl, Validators } from '@angular/forms';
 import {
-  Controls,
-  NgxSubFormRemapComponent,
-  subformComponentProviders,
   ArrayPropertyKey,
   ArrayPropertyValue,
+  Controls,
   NgxFormWithArrayControls,
-  SubFormGroup
+  NgxSubFormRemapComponent,
+  SubFormArray,
+  subformComponentProviders,
+  SubFormGroup,
 } from 'ngx-sub-form';
+
 import { CrewMember } from '../../../../../interfaces/crew-member.interface';
 
 interface CrewMembersForm {
@@ -25,7 +27,7 @@ export class CrewMembersComponent extends NgxSubFormRemapComponent<CrewMember[],
   implements NgxFormWithArrayControls<CrewMembersForm> {
   protected getFormControls(): Controls<CrewMembersForm> {
     return {
-      crewMembers: new FormArray([]),
+      crewMembers: new SubFormArray(this, []),
     };
   }
 
@@ -65,21 +67,12 @@ export class CrewMembersComponent extends NgxSubFormRemapComponent<CrewMember[],
     key: ArrayPropertyKey<CrewMembersForm> | undefined,
     value: ArrayPropertyValue<CrewMembersForm>,
   ): FormControl {
-    // TODO figure out how to handle initalizing new SubFormGroups with values in array case
-    // switch (key) {
-    //   // note: the following string is type safe based on your form properties!
-    //   case 'crewMembers':
-    //     return new FormControl(value, [Validators.required]);
-    //   default:
-    //     return new FormControl(value);
-    // }
-
     switch (key) {
       // note: the following string is type safe based on your form properties!
       case 'crewMembers':
-        return new SubFormGroup([Validators.required]) as any;
+        return new SubFormGroup(value, [Validators.required]) as any;
       default:
-        return new SubFormGroup() as any;
+        return new SubFormGroup(value) as any;
     }
   }
 }

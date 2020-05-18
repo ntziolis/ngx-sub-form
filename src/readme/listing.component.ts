@@ -46,8 +46,8 @@ export class ListingComponent extends NgxAutomaticRootFormComponent<OneListing, 
 
   protected getFormControls(): Controls<OneListingForm> {
     return {
-      vehicleProduct: new SubFormGroup(),
-      droidProduct: new SubFormGroup(),
+      vehicleProduct: new SubFormGroup(null),
+      droidProduct: new SubFormGroup(null),
       listingType: new FormControl(null, Validators.required),
       id: new FormControl(null, Validators.required),
       title: new FormControl(null, Validators.required),

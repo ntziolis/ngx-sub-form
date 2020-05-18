@@ -21,8 +21,8 @@ export class VehicleProductComponent extends NgxSubFormRemapComponent<OneVehicle
 
   protected getFormControls(): Controls<OneVehicleForm> {
     return {
-      speeder: new SubFormGroup(),
-      spaceship: new SubFormGroup(),
+      speeder: new SubFormGroup(null),
+      spaceship: new SubFormGroup(null),
       vehicleType: new FormControl(null, { validators: [Validators.required] }),
     };
   }
