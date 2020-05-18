@@ -94,9 +94,6 @@
           </mat-option>
         </mat-select>
       </mat-form-field>
-
-      <!-- TODO: check why this fails
-
       <div [ngSwitch]="formGroupValues.listingType">
         <app-droid-product
           *ngSwitchCase="ListingType.DROID"
@@ -107,7 +104,7 @@
           *ngSwitchCase="ListingType.VEHICLE"
           [subForm]="formGroupControls.vehicleProduct"
         ></app-vehicle-product>
-      </div> -->
+      </div>
     </form>
   </mat-card-content>
   <mat-card-actions>
@@ -158,6 +155,14 @@
         Form is valid, no error!
       </span>
     </ng-template>
+  </mat-card-content>
+</mat-card>
+
+<mat-card class="values">
+  <mat-card-title>Control values</mat-card-title>
+
+  <mat-card-content>
+    <pre>{{ $any(this.formGroup).controlValue | json }}</pre>
   </mat-card-content>
 </mat-card>
 
