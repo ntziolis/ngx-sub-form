@@ -127,7 +127,7 @@ describe(`NgxAutomaticRootFormComponent`, () => {
     setTimeout(() => {
       expect(vehicleUpdatedSpy).not.toHaveBeenCalled();
 
-      componentForm.formGroupControls.crewMemberCount.setValue(MAX_CREW_MEMBER_COUNT);
+      componentForm.formGroup.controls.crewMemberCount.setValue(MAX_CREW_MEMBER_COUNT);
       // shouldn't require to call `componentForm.manualSave()`!
 
       setTimeout(() => {

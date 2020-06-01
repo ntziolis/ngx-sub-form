@@ -5,7 +5,7 @@
     </option>
   </select>
 
-  <div [ngSwitch]="formGroupValues.listingType">
+  <div [ngSwitch]="formGroup.controls.listingType.value">
     <app-droid-product
       *ngSwitchCase="ListingType.DROID"
       [formControlName]="formControlNames.droidProduct"

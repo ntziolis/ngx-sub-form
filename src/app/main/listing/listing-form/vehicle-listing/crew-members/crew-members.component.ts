@@ -48,11 +48,11 @@ export class CrewMembersComponent extends NgxSubFormRemapComponent<CrewMember[],
   }
 
   public removeCrewMember(index: number): void {
-    this.formGroupControls.crewMembers.removeAt(index);
+    this.formGroup.controls.crewMembers.removeAt(index);
   }
 
   public addCrewMember(): void {
-    this.formGroupControls.crewMembers.push(
+    this.formGroup.controls.crewMembers.push(
       this.createFormArrayControl('crewMembers', {
         firstName: '',
         lastName: '',

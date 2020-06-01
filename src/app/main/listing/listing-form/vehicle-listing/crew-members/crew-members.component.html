@@ -4,7 +4,7 @@
   <div
     class="crew-member"
     [formArrayName]="formControlNames.crewMembers"
-    *ngFor="let crewMember of formGroupControls.crewMembers.controls; let i = index"
+    *ngFor="let crewMember of formGroup.controls.crewMembers.controls; let i = index"
   >
     <app-crew-member [subForm]="crewMember"></app-crew-member>
 

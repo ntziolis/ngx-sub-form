@@ -258,13 +258,13 @@ describe(`NgxRootFormComponent with an array`, () => {
     componentFixture.detectChanges();
     componentForm = componentDebug.query(By.directive(RootFormArrayComponent)).componentInstance;
 
-    expect(componentForm.formGroupControls.vehicles.disabled).toBe(false);
-    expect(componentForm.formGroupControls.vehicles.at(0).disabled).toBe(false);
+    expect(componentForm.formGroup.controls.vehicles.disabled).toBe(false);
+    expect(componentForm.formGroup.controls.vehicles.at(0).disabled).toBe(false);
 
     component.disabled = true;
     componentFixture.detectChanges();
 
-    expect(componentForm.formGroupControls.vehicles.disabled).toBe(true);
-    expect(componentForm.formGroupControls.vehicles.at(0).disabled).toBe(true);
+    expect(componentForm.formGroup.controls.vehicles.disabled).toBe(true);
+    expect(componentForm.formGroup.controls.vehicles.at(0).disabled).toBe(true);
   });
 });

@@ -121,13 +121,13 @@ describe(`NgxSubFormComponent`, () => {
       expect(subComponent.formGroup.get(subComponent.formControlNames.crewMemberCount)).not.toBeNull();
     });
 
-    it(`should create a formGroupControls property to easily access all the formControls`, () => {
+    it(`should create a formGroup.controls property to easily access all the formControls`, () => {
       // following should not compile because random is not defined
       // expect(subComponent.controls.random).toBeNull();
 
-      expect(subComponent.formGroupControls.canFire).not.toBeNull();
-      expect(subComponent.formGroupControls.color).not.toBeNull();
-      expect(subComponent.formGroupControls.crewMemberCount).not.toBeNull();
+      expect(subComponent.formGroup.controls.canFire).not.toBeNull();
+      expect(subComponent.formGroup.controls.color).not.toBeNull();
+      expect(subComponent.formGroup.controls.crewMemberCount).not.toBeNull();
     });
 
     it(`should create a formGroupValues property to easily access all the values individually`, () => {
@@ -301,7 +301,7 @@ describe(`NgxSubFormComponent`, () => {
       subComponent.registerOnTouched(onTouchedSpy);
       subComponent.registerOnChange(onChangeSpy);
 
-      subComponent.formGroupControls.color.setValue('red');
+      subComponent.formGroup.controls.color.setValue('red');
 
       setTimeout(() => {
         expect(onTouchedSpy).toHaveBeenCalledTimes(1);
@@ -320,10 +320,10 @@ describe(`NgxSubFormComponent`, () => {
       debouncedSubComponent.registerOnTouched(onTouchedSpy);
       debouncedSubComponent.registerOnChange(onChangeSpy);
 
-      debouncedSubComponent.formGroupControls.color.setValue('red');
-      debouncedSubComponent.formGroupControls.color.setValue('blue');
-      debouncedSubComponent.formGroupControls.color.setValue('green');
-      debouncedSubComponent.formGroupControls.color.setValue('yellow');
+      debouncedSubComponent.formGroup.controls.color.setValue('red');
+      debouncedSubComponent.formGroup.controls.color.setValue('blue');
+      debouncedSubComponent.formGroup.controls.color.setValue('green');
+      debouncedSubComponent.formGroup.controls.color.setValue('yellow');
 
       setTimeout(() => {
         expect(onTouchedSpy).toHaveBeenCalledTimes(1);
@@ -347,8 +347,8 @@ describe(`NgxSubFormComponent`, () => {
         expect(onChangeSpy.calls.count()).toEqual(1);
         expect(onChangeSpy.calls.argsFor(0)).toEqual([getDefaultValues()]);
 
-        subComponent.formGroupControls.crewMemberCount.setValue(crewMemberCount + 1);
-        subComponent.formGroupControls.crewMemberCount.setValue(crewMemberCount + 2);
+        subComponent.formGroup.controls.crewMemberCount.setValue(crewMemberCount + 1);
+        subComponent.formGroup.controls.crewMemberCount.setValue(crewMemberCount + 2);
 
         setTimeout(() => {
           expect(onChangeSpy.calls.count()).toEqual(3);
@@ -412,7 +412,7 @@ describe(`NgxSubFormComponent`, () => {
       subComponent.onFormUpdate = spyOnFormUpdate;
       subComponent.registerOnChange(() => {});
 
-      subComponent.formGroupControls.color.setValue(`red`);
+      subComponent.formGroup.controls.color.setValue(`red`);
 
       setTimeout(() => {
         expect(spyOnFormUpdate).toHaveBeenCalledWith({
@@ -710,13 +710,13 @@ describe(`SubArrayComponent`, () => {
 
     subArrayComponent.writeValue(values);
 
-    expect(subArrayComponent.formGroupControls.vehicles.value).toEqual(values);
+    expect(subArrayComponent.formGroup.controls.vehicles.value).toEqual(values);
 
     const newValue = { canFire: true, color: 'color-3', crewMemberCount: 3 };
 
     subArrayComponent.writeValue([...values, newValue]);
 
-    expect(subArrayComponent.formGroupControls.vehicles.value).toEqual([...values, newValue]);
+    expect(subArrayComponent.formGroup.controls.vehicles.value).toEqual([...values, newValue]);
   });
 
   it(`should keep existing 'FormControl's within the array when removing or adding values to the array`, () => {
@@ -731,21 +731,21 @@ describe(`SubArrayComponent`, () => {
 
     subArrayComponent.writeValue(values);
 
-    const fc1: FormControl = subArrayComponent.formGroupControls.vehicles.at(0) as FormControl;
-    const fc2: FormControl = subArrayComponent.formGroupControls.vehicles.at(1) as FormControl;
+    const fc1: FormControl = subArrayComponent.formGroup.controls.vehicles.at(0) as FormControl;
+    const fc2: FormControl = subArrayComponent.formGroup.controls.vehicles.at(1) as FormControl;
 
     const newValue = { canFire: true, color: 'color-3', crewMemberCount: 3 };
 
     subArrayComponent.writeValue([...values, newValue]);
 
     // check the form controls are the exact same instances
-    expect(subArrayComponent.formGroupControls.vehicles.at(0)).toBe(fc1);
-    expect(subArrayComponent.formGroupControls.vehicles.at(1)).toBe(fc2);
+    expect(subArrayComponent.formGroup.controls.vehicles.at(0)).toBe(fc1);
+    expect(subArrayComponent.formGroup.controls.vehicles.at(1)).toBe(fc2);
 
     // check the values are unchanged
-    expect(subArrayComponent.formGroupControls.vehicles.at(0).value).toBe(values[0]);
-    expect(subArrayComponent.formGroupControls.vehicles.at(1).value).toBe(values[1]);
-    expect(subArrayComponent.formGroupControls.vehicles.at(2).value).toBe(newValue);
+    expect(subArrayComponent.formGroup.controls.vehicles.at(0).value).toBe(values[0]);
+    expect(subArrayComponent.formGroup.controls.vehicles.at(1).value).toBe(values[1]);
+    expect(subArrayComponent.formGroup.controls.vehicles.at(2).value).toBe(newValue);
   });
 
   it(`should be possible to create a FormControl from the 'createFormArrayControl' hook based on the current property`, () => {
@@ -763,7 +763,7 @@ describe(`SubArrayComponent`, () => {
     expect(createFormArrayControl).toHaveBeenCalledWith('vehicles', values[0]);
     expect(createFormArrayControl).toHaveBeenCalledWith('vehicles', values[1]);
     // check non-default control was created
-    expect(subArrayComponent.formGroupControls.vehicles.at(0).validator).not.toBe(null);
+    expect(subArrayComponent.formGroup.controls.vehicles.at(0).validator).not.toBe(null);
   });
 
   it(`should disable all the controls within an array`, () => {
@@ -776,15 +776,15 @@ describe(`SubArrayComponent`, () => {
 
     subArrayComponent.writeValue(values);
 
-    expect(subArrayComponent.formGroupControls.vehicles.disabled).toBe(false);
-    expect(subArrayComponent.formGroupControls.vehicles.at(0).disabled).toBe(false);
-    expect(subArrayComponent.formGroupControls.vehicles.at(1).disabled).toBe(false);
+    expect(subArrayComponent.formGroup.controls.vehicles.disabled).toBe(false);
+    expect(subArrayComponent.formGroup.controls.vehicles.at(0).disabled).toBe(false);
+    expect(subArrayComponent.formGroup.controls.vehicles.at(1).disabled).toBe(false);
 
     subArrayComponent.setDisabledState(true);
 
-    expect(subArrayComponent.formGroupControls.vehicles.disabled).toBe(true);
-    expect(subArrayComponent.formGroupControls.vehicles.at(0).disabled).toBe(true);
-    expect(subArrayComponent.formGroupControls.vehicles.at(1).disabled).toBe(true);
+    expect(subArrayComponent.formGroup.controls.vehicles.disabled).toBe(true);
+    expect(subArrayComponent.formGroup.controls.vehicles.at(0).disabled).toBe(true);
+    expect(subArrayComponent.formGroup.controls.vehicles.at(1).disabled).toBe(true);
   });
 
   it(`should not return an error when a property is a FormArray without any value`, () => {

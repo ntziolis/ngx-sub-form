@@ -34,21 +34,6 @@ type FilterControlFunction<FormInterface> = (
 
 export abstract class NgxSubFormComponent<ControlInterface, FormInterface = ControlInterface>
   implements OnDestroy, OnChanges {
-  public get formGroupControls(): ControlsType<FormInterface> {
-    // @note form-group-undefined we need the return null here because we do not want to expose the fact that
-    // the form can be undefined, it's handled internally to contain an Angular bug
-    if (!this.formGroup) {
-      return null as any;
-    }
-
-    return (this.formGroup.controls as unknown) as ControlsType<FormInterface>;
-  }
-
-  public get formGroupValues(): Required<FormInterface> {
-    // see @note form-group-undefined for non-null assertion reason
-    // tslint:disable-next-line:no-non-null-assertion
-    return this.mapControls(ctrl => ctrl.value)!;
-  }
 
   public get formGroupErrors(): FormErrors<FormInterface> {
     const errors: FormErrors<FormInterface> = this.mapControls<ValidationErrors | ValidationErrors[] | null>(

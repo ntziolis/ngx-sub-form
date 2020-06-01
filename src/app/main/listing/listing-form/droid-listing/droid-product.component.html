@@ -13,19 +13,19 @@
     </mat-select>
   </mat-form-field>
 
-  <div [ngSwitch]="formGroupValues.droidType">
+  <div [ngSwitch]="formGroup.controls.droidType.value">
     <app-protocol-droid
       *ngSwitchCase="DroidType.PROTOCOL"
-      [subForm]="formGroupControls.protocolDroid"
+      [subForm]="formGroup.controls.protocolDroid"
     ></app-protocol-droid>
-    <app-medical-droid *ngSwitchCase="DroidType.MEDICAL" [subForm]="formGroupControls.medicalDroid"></app-medical-droid>
+    <app-medical-droid *ngSwitchCase="DroidType.MEDICAL" [subForm]="formGroup.controls.medicalDroid"></app-medical-droid>
     <app-astromech-droid
       *ngSwitchCase="DroidType.ASTROMECH"
-      [subForm]="formGroupControls.astromechDroid"
+      [subForm]="formGroup.controls.astromechDroid"
     ></app-astromech-droid>
     <app-assassin-droid
       *ngSwitchCase="DroidType.ASSASSIN"
-      [subForm]="formGroupControls.assassinDroid"
+      [subForm]="formGroup.controls.assassinDroid"
     ></app-assassin-droid>
   </div>
 </fieldset>
