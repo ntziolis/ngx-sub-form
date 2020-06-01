@@ -1,6 +1,7 @@
 import { FormControl, FormGroup, ValidationErrors } from '@angular/forms';
 import { Observable } from 'rxjs';
-import { ArrayPropertyKey, ArrayPropertyValue, Controls, FormUpdate } from './ngx-sub-form-utils';
+import { ArrayPropertyKey, ArrayPropertyValue, Controls, FormUpdate, TypedFormGroup, ControlsType } from './ngx-sub-form-utils';
+import { SubFormGroup } from './sub-form-group';
 
 // @deprecated
 export interface OnFormUpdate<FormInterface> {
@@ -8,15 +9,9 @@ export interface OnFormUpdate<FormInterface> {
   onFormUpdate?: (formUpdate: FormUpdate<FormInterface>) => void;
 }
 
-type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
 type Nullable<T> = T | null;
 
 export type NullableObject<T> = { [P in keyof T]: Nullable<T[P]> };
-
-export type TypedFormGroup<FormInterface> = Omit<FormGroup, 'controls' | 'value'> & {
-  controls: Controls<FormInterface>;
-  value: FormInterface;
-};
 
 export type TypedValidatorFn<T> = (formGroup: TypedFormGroup<T>) => ValidationErrors | null;
 
@@ -46,4 +41,9 @@ export interface FormGroupOptions<T> {
 // cannot be fully type narrowed to the exact type that will be passed.
 export interface NgxFormWithArrayControls<T> {
   createFormArrayControl(key: ArrayPropertyKey<T>, value: ArrayPropertyValue<T>): FormControl;
+}
+
+
+export interface TypedSubFormGroup<TControl, TForm = TControl> extends SubFormGroup<TControl, TForm> {
+  controls: ControlsType<TForm>;
 }

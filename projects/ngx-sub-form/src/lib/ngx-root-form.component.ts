@@ -42,7 +42,7 @@ export abstract class NgxRootFormComponent<ControlInterface, FormInterface = Con
         filter(newValue => !isEqual(newValue, this.formGroup.value)),
         tap(newValue => {
           if (!isNullOrUndefined(newValue)) {
-            this.formGroup.patchValue(newValue);
+            this.formGroup.patchValue(newValue, undefined);
           }
         }),
       )

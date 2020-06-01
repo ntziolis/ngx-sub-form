@@ -102,6 +102,8 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
 
     const transformedValue = (this.transformToFormGroup((value as unknown) as TControl, {}) as unknown) as TForm;
 
+    // TODO rethink as this might not work as we want it, we might not even need this anymore
+    // @ts-ignore
     (super.value as any) = transformedValue;
 
     this.controlValue = value;

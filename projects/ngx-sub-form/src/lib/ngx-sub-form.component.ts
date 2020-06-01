@@ -1,4 +1,4 @@
-import { Input, OnDestroy, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Input, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
 import {
   AbstractControl,
   AbstractControlOptions,
@@ -19,13 +19,15 @@ import {
   ControlsType,
   FormErrors,
   isNullOrUndefined,
+  TypedAbstractControl,
+  TypedFormGroup,
 } from './ngx-sub-form-utils';
-import { FormGroupOptions, NgxFormWithArrayControls, TypedFormGroup } from './ngx-sub-form.types';
-import { SubFormGroup, patchFormControl, SubFormArray } from './sub-form-group';
+import { FormGroupOptions, NgxFormWithArrayControls, TypedSubFormGroup } from './ngx-sub-form.types';
+import { patchFormControl, SubFormArray, SubFormGroup } from './sub-form-group';
 
 type MapControlFunction<FormInterface, MapValue> = (ctrl: AbstractControl, key: keyof FormInterface) => MapValue;
 type FilterControlFunction<FormInterface> = (
-  ctrl: AbstractControl,
+  ctrl: TypedAbstractControl<any>,
   key: keyof FormInterface,
   isCtrlWithinFormArray: boolean,
 ) => boolean;
@@ -39,7 +41,7 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
       return null as any;
     }
 
-    return this.formGroup.controls as ControlsType<FormInterface>;
+    return (this.formGroup.controls as unknown) as ControlsType<FormInterface>;
   }
 
   public get formGroupValues(): Required<FormInterface> {
@@ -78,7 +80,7 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
   // see @note form-group-undefined
 
   // tslint:disable-next-line: no-input-rename
-  @Input('subForm') formGroup!: TypedFormGroup<FormInterface>;
+  @Input('subForm') formGroup!: TypedSubFormGroup<ControlInterface, FormInterface>;// | SubFormArray<ControlInterface, FormInterface>;
 
   protected emitNullOnDestroy = true;
   protected emitInitialValueOnInit = true;
@@ -91,12 +93,10 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
       return;
     }
 
-    // provide a descriptive error message when the declaration the parent for was incorrect
-    if (!(this.formGroup instanceof SubFormGroup || this.formGroup instanceof SubFormArray)) {
+    // TODO rethink if this can ever be a sub form array
+    if (!(this.formGroup instanceof SubFormGroup)){// || this.formGroup instanceof SubFormArray)) {
       throw new Error('The subForm input needs to be of type SubFormGroup.');
     }
-
-    const oldControls = (this.formGroup.controls as unknown) as AbstractControl[];
 
     Object.keys(this.formGroup.controls).forEach(key => {
       this.formGroup.removeControl(key);
@@ -217,7 +217,7 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
       return null;
     }
 
-    const formControls: Controls<FormInterface> = this.formGroup.controls;
+    const formControls: ControlsType<FormInterface> = this.formGroup.controls;
 
     const controls: Partial<ControlMap<FormInterface, MapValue | MapValue[]>> = {};
 
