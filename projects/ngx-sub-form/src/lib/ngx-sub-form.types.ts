@@ -46,4 +46,5 @@ export interface NgxFormWithArrayControls<T> {
 
 export interface TypedSubFormGroup<TControl, TForm = TControl> extends SubFormGroup<TControl, TForm> {
   controls: ControlsType<TForm>;
+  valueChanges: Observable<TControl>;
 }
