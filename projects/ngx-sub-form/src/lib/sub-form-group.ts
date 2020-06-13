@@ -1,4 +1,4 @@
-import { EventEmitter } from '@angular/core';
+import { EventEmitter, ChangeDetectorRef } from '@angular/core';
 import {
   AbstractControlOptions,
   AsyncValidatorFn,
