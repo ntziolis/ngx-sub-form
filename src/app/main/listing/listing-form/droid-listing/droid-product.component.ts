@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { AbstractControl, FormArray, FormControl, FormGroup } from '@angular/forms';
+import { AbstractControl, FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Controls, NgxSubFormRemapComponent, SubFormGroup } from 'ngx-sub-form';
 import {
   AssassinDroid,
