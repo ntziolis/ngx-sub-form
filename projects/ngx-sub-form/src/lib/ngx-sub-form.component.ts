@@ -6,6 +6,7 @@ import {
   FormArray,
   FormControl,
   ValidatorFn,
+  ValidationErrors,
 } from '@angular/forms';
 import { Observable } from 'rxjs';
 
@@ -33,19 +34,18 @@ type FilterControlFunction<FormInterface> = (
 export abstract class NgxSubFormComponent<ControlInterface, FormInterface = ControlInterface>
   implements OnDestroy, OnChanges, AfterContentChecked {
   public get formGroupErrors(): FormErrors<FormInterface> {
-    return {};
     // TODO figure out how to deal with errors
-    // const errors: FormErrors<FormInterface> = this.mapControls<ValidationErrors | ValidationErrors[] | null>(
-    //   ctrl => ctrl.errors,
-    //   (ctrl, _, isCtrlWithinFormArray) => (isCtrlWithinFormArray ? true : ctrl.invalid),
-    //   true,
-    // ) as FormErrors<FormInterface>;
+    const errors: FormErrors<FormInterface> = this.mapControls<ValidationErrors | ValidationErrors[] | null>(
+      ctrl => ctrl.errors,
+      (ctrl, _, isCtrlWithinFormArray) => (isCtrlWithinFormArray ? true : ctrl.invalid),
+      true,
+    ) as FormErrors<FormInterface>;
 
-    // if (!this.formGroup.errors && (!errors || !Object.keys(errors).length)) {
-    //   return null;
-    // }
+    if (!this.formGroup.errors && (!errors || !Object.keys(errors).length)) {
+      return null;
+    }
 
-    // return Object.assign({}, this.formGroup.errors ? { formGroup: this.formGroup.errors } : {}, errors);
+    return Object.assign({}, this.formGroup.errors ? { formGroup: this.formGroup.errors } : {}, errors);
   }
 
   public get formControlNames(): ControlsNames<FormInterface> {
