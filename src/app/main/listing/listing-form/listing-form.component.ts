@@ -37,7 +37,6 @@ interface OneListingForm {
 })
 // export class ListingFormComponent extends NgxAutomaticRootFormComponent<OneListing, OneListingForm>
 export class ListingFormComponent extends NgxRootFormComponent<OneListing, OneListingForm> {
-  @DataInput()
   // tslint:disable-next-line:no-input-rename
   @Input('listing')
   public dataInput: Required<OneListing> | null | undefined;
