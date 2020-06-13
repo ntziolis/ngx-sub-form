@@ -33,6 +33,7 @@ import { MainComponent } from './main/main.component';
 import { CrewMemberComponent } from './main/listing/listing-form/vehicle-listing/crew-members/crew-member/crew-member.component';
 import { DisplayCrewMembersPipe } from './main/listings/display-crew-members.pipe';
 import { CrewMembersComponent } from './main/listing/listing-form/vehicle-listing/crew-members/crew-members.component';
+import { NgxSubFormModule } from 'ngx-sub-form';
 
 const MATERIAL_MODULES = [
   LayoutModule,
@@ -84,6 +85,7 @@ const MATERIAL_MODULES = [
       },
       { path: '**', pathMatch: 'full', redirectTo: '/' },
     ]),
+    NgxSubFormModule
   ],
   providers: [],
   bootstrap: [AppComponent],
