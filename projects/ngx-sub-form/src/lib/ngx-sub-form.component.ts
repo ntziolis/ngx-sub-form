@@ -1,11 +1,10 @@
-import { Input, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
+import { AfterContentChecked, Input, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
 import {
   AbstractControl,
   AbstractControlOptions,
   AsyncValidatorFn,
   FormArray,
   FormControl,
-  ValidationErrors,
   ValidatorFn,
 } from '@angular/forms';
 import { Observable } from 'rxjs';
@@ -20,10 +19,9 @@ import {
   FormErrors,
   isNullOrUndefined,
   TypedAbstractControl,
-  TypedFormGroup,
 } from './ngx-sub-form-utils';
 import { FormGroupOptions, NgxFormWithArrayControls, TypedSubFormGroup } from './ngx-sub-form.types';
-import { patchFormControl, SubFormArray, SubFormGroup } from './sub-form-group';
+import { patchFormControl, SubFormGroup } from './sub-form-group';
 
 type MapControlFunction<FormInterface, MapValue> = (ctrl: AbstractControl, key: keyof FormInterface) => MapValue;
 type FilterControlFunction<FormInterface> = (
@@ -33,20 +31,21 @@ type FilterControlFunction<FormInterface> = (
 ) => boolean;
 
 export abstract class NgxSubFormComponent<ControlInterface, FormInterface = ControlInterface>
-  implements OnDestroy, OnChanges {
-
+  implements OnDestroy, OnChanges, AfterContentChecked {
   public get formGroupErrors(): FormErrors<FormInterface> {
-    const errors: FormErrors<FormInterface> = this.mapControls<ValidationErrors | ValidationErrors[] | null>(
-      ctrl => ctrl.errors,
-      (ctrl, _, isCtrlWithinFormArray) => (isCtrlWithinFormArray ? true : ctrl.invalid),
-      true,
-    ) as FormErrors<FormInterface>;
+    return {};
+    // TODO figure out how to deal with errors
+    // const errors: FormErrors<FormInterface> = this.mapControls<ValidationErrors | ValidationErrors[] | null>(
+    //   ctrl => ctrl.errors,
+    //   (ctrl, _, isCtrlWithinFormArray) => (isCtrlWithinFormArray ? true : ctrl.invalid),
+    //   true,
+    // ) as FormErrors<FormInterface>;
 
-    if (!this.formGroup.errors && (!errors || !Object.keys(errors).length)) {
-      return null;
-    }
+    // if (!this.formGroup.errors && (!errors || !Object.keys(errors).length)) {
+    //   return null;
+    // }
 
-    return Object.assign({}, this.formGroup.errors ? { formGroup: this.formGroup.errors } : {}, errors);
+    // return Object.assign({}, this.formGroup.errors ? { formGroup: this.formGroup.errors } : {}, errors);
   }
 
   public get formControlNames(): ControlsNames<FormInterface> {
@@ -65,7 +64,7 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
   // see @note form-group-undefined
 
   // tslint:disable-next-line: no-input-rename
-  @Input('subForm') formGroup!: TypedSubFormGroup<ControlInterface, FormInterface>;// | SubFormArray<ControlInterface, FormInterface>;
+  @Input('subForm') formGroup!: TypedSubFormGroup<ControlInterface, FormInterface>; // | SubFormArray<ControlInterface, FormInterface>;
 
   protected emitNullOnDestroy = true;
   protected emitInitialValueOnInit = true;
@@ -79,7 +78,8 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
     }
 
     // TODO rethink if this can ever be a sub form array
-    if (!(this.formGroup instanceof SubFormGroup)){// || this.formGroup instanceof SubFormArray)) {
+    if (!(this.formGroup instanceof SubFormGroup)) {
+      // || this.formGroup instanceof SubFormArray)) {
       throw new Error('The subForm input needs to be of type SubFormGroup.');
     }
 
@@ -96,11 +96,11 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
       if (controls.hasOwnProperty(key)) {
         const control = controls[key];
 
-        // we need to write up the form controls with the sub form group
+        // we need to wire up the form controls with the sub form group
         // this allows us to transform the sub form value to ControlInterface
         // every time any of the form controls on the sub form change
         if (control instanceof FormControl) {
-          patchFormControl(subForm as SubFormGroup<any>, control);
+          patchFormControl(subForm, control);
         }
 
         this.formGroup.addControl(key, control);
@@ -173,7 +173,8 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
     if (Array.isArray(transformedValue)) {
       mergedValues = subForm.controlValue;
     } else {
-      mergedValues = { ...transformedValue, ...(subForm.controlValue || {}) } as ControlInterface;
+      const controlValue = (changes['dataInput'] ? (this as any)['dataInput'] : subForm.controlValue) || {};
+      mergedValues = { ...transformedValue, ...controlValue } as ControlInterface;
     }
 
     const formValue = this.transformToFormGroup(mergedValues, {});
@@ -183,6 +184,32 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
 
     // check if this needs to be called after reset was called
     this.formGroup.updateValueAndValidity({ onlySelf: true, emitEvent: false });
+
+    if (this.formGroup.cd) {
+      this.formGroup.cd.detectChanges();
+    }
+  }
+
+  ngAfterContentChecked(): void {
+    if (this.formGroup.cd) {
+      this.formGroup.cd.detectChanges();
+    }
+  }
+
+  // @todo could this be removed to avoid an override and just use `takeUntilDestroyed`?
+  public ngOnDestroy(): void {
+    // @hack there's a memory leak within Angular and those components
+    // are not correctly cleaned up which leads to error if a form is defined
+    // with validators and then it's been removed, the validator would still fail
+    // `as any` if because we do not want to define the formGroup as FormGroup | undefined
+    // everything related to undefined is handled internally and shouldn't be exposed to end user
+    (this.formGroup as any) = undefined;
+
+    // TODO see if we still need this as this would require handling of some special value inside the SubFromGroup / SubFromArray
+    // this is because the chanegs stream comes directly out of the formGroup so there is on way to plug it in
+    // if (this.emitNullOnDestroy) {
+    //   this.formGroup.setValue(null as any);
+    // }
   }
 
   private mapControls<MapValue>(
@@ -238,22 +265,6 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
     return {};
   }
 
-  // @todo could this be removed to avoid an override and just use `takeUntilDestroyed`?
-  public ngOnDestroy(): void {
-    // @hack there's a memory leak within Angular and those components
-    // are not correctly cleaned up which leads to error if a form is defined
-    // with validators and then it's been removed, the validator would still fail
-    // `as any` if because we do not want to define the formGroup as FormGroup | undefined
-    // everything related to undefined is handled internally and shouldn't be exposed to end user
-    (this.formGroup as any) = undefined;
-
-    // TODO see if we still need this as this would require handling of some special value inside the SubFromGroup / SubFromArray
-    // this is because the chanegs stream comes directly out of the formGroup so there is on way to plug it in
-    // if (this.emitNullOnDestroy) {
-    //   this.formGroup.setValue(null as any);
-    // }
-  }
-
   // when getDefaultValues is defined, you do not need to specify the default values
   // in your form (the ones defined within the `getFormControls` method)
   protected getDefaultValues(): Partial<FormInterface> {
@@ -264,6 +275,7 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
     if (!this.formGroup) {
       debugger;
     }
+    let controlAddedOrRemoved = false;
     Object.entries(obj).forEach(([key, value]) => {
       if (this.formGroup.get(key) instanceof FormArray && Array.isArray(value)) {
         const formArray: FormArray = this.formGroup.get(key) as FormArray;
@@ -274,6 +286,7 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
         // - validators are not destroyed/created again and eventually fire again for no reason
         while (formArray.length > value.length) {
           formArray.removeAt(formArray.length - 1);
+          controlAddedOrRemoved = true;
         }
 
         for (let i = formArray.length; i < value.length; i++) {
@@ -285,7 +298,12 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
             patchFormControl((this.formGroup as unknown) as SubFormGroup<any>, control);
             formArray.insert(i, control);
           }
+          controlAddedOrRemoved = true;
         }
+      }
+
+      if (controlAddedOrRemoved && this.formGroup.cd) {
+        this.formGroup.cd.detectChanges();
       }
     });
   }
