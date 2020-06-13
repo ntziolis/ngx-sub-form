@@ -180,17 +180,19 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
     const formValue = this.transformToFormGroup(mergedValues, {});
     this.handleFormArrayControls(formValue);
 
-    this.formGroup.reset(mergedValues, { onlySelf: true, emitEvent: false });
+    // self = false is critical here
+    // this allows the parent form to re-evaluate its status after each of its sub form has completed intialization
+    // we actually only need to call this on the deepest sub form in a tree (leaves)
+    // but there is no way to identify if there are sub forms on the current form + that are also rendered
+    // as only when sub forms are rendered the on changes method on the sub form is executed
 
-    // check if this needs to be called after reset was called
-    this.formGroup.updateValueAndValidity({ onlySelf: true, emitEvent: false });
-
-    if (this.formGroup.cd) {
-      this.formGroup.cd.detectChanges();
-    }
+    // TODO decide if we want to emit an event when input control value != control value after intialization
+    // this happens for example when null is passed in but default values change the value of the inner form
+    this.formGroup.reset(mergedValues, { onlySelf: false, emitEvent: false });
   }
 
   ngAfterContentChecked(): void {
+    // checking if the form group has a change detector (root forms do not)
     if (this.formGroup.cd) {
       this.formGroup.cd.detectChanges();
     }
@@ -275,7 +277,7 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
     if (!this.formGroup) {
       debugger;
     }
-    let controlAddedOrRemoved = false;
+
     Object.entries(obj).forEach(([key, value]) => {
       if (this.formGroup.get(key) instanceof FormArray && Array.isArray(value)) {
         const formArray: FormArray = this.formGroup.get(key) as FormArray;
@@ -286,7 +288,6 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
         // - validators are not destroyed/created again and eventually fire again for no reason
         while (formArray.length > value.length) {
           formArray.removeAt(formArray.length - 1);
-          controlAddedOrRemoved = true;
         }
 
         for (let i = formArray.length; i < value.length; i++) {
@@ -298,12 +299,7 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
             patchFormControl((this.formGroup as unknown) as SubFormGroup<any>, control);
             formArray.insert(i, control);
           }
-          controlAddedOrRemoved = true;
         }
-      }
-
-      if (controlAddedOrRemoved && this.formGroup.cd) {
-        this.formGroup.cd.detectChanges();
       }
     });
   }
