@@ -108,34 +108,17 @@
     </form>
   </mat-card-content>
   <mat-card-actions>
-    <!--
-      `<div *ngIf="true">`... You could legitimely think that we're crazy or that ngx-sub-form
-      is messing up with your form. In fact, it is not related to the lib at all. It has to do
-      with how Angular analyze the DOM and the priorities during change detection.
-      "But will I have to do that in my app too?" -*-*-> YES if you need to make a check based
-      on the form validity.
-      Please see that issue for more info
-      https://github.com/angular/angular/issues/18004
-      and that comment in particular
-      https://github.com/angular/angular/issues/18004#issuecomment-328806479
-      "But what if I don't do that?" -*-*-> Well you'll end up with the error we all know:
-      `ExpressionChangedAfterItHasBeenCheckedError`. Please refer to comment if you want to
-      know why
-    -->
-    <div *ngIf="true">
-      <!-- @todo -->
-      <button
-        mat-raised-button
-        color="primary"
-        (click)="manualSave()"
-        [disabled]="formGroup.invalid || formGroup.disabled"
-      >
-        Upsert
-      </button>
+    <button
+      mat-raised-button
+      color="primary"
+      (click)="manualSave()"
+      [disabled]="formGroup.invalid || formGroup.disabled"
+    >
+      Upsert
+    </button>
 
-      <div *ngIf="formGroup.invalid" class="invalid-form">
-        Form is invalid
-      </div>
+    <div *ngIf="formGroup.invalid" class="invalid-form">
+      Form is invalid
     </div>
   </mat-card-actions>
 </mat-card>

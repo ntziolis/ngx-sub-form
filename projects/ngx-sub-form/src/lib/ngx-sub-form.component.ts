@@ -192,9 +192,16 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
   }
 
   ngAfterContentChecked(): void {
-    // checking if the form group has a change detector (root forms do not)
+    // checking if the form group has a change detector (root forms might not)
     if (this.formGroup.cd) {
-      this.formGroup.cd.detectChanges();
+      // if this is the root form
+      // OR if ist a sub form but the root form does not have a change detector
+      // we need to actually run change detection vs just marking for check
+      if (!this.formGroup.parent && (this.formGroup.root as any).cd) {
+        this.formGroup.cd.detectChanges();
+      } else {
+        this.formGroup.cd.markForCheck();
+      }
     }
   }
 

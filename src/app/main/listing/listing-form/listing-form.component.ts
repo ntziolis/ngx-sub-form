@@ -1,19 +1,11 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
-import {
-  Controls,
-  takeUntilDestroyed,
-  // NgxAutomaticRootFormComponent,
-  // NGX_SUB_FORM_HANDLE_VALUE_CHANGES_RATE_STRATEGIES,
-  NgxRootFormComponent,
-  SubFormGroup,
-} from 'ngx-sub-form';
-import { tap } from 'rxjs/operators';
+import { Controls, NgxRootFormComponent, SubFormGroup } from 'ngx-sub-form';
 import { ListingType, OneListing } from 'src/app/interfaces/listing.interface';
+
 import { OneDroid } from '../../../interfaces/droid.interface';
 import { OneVehicle } from '../../../interfaces/vehicle.interface';
 import { UnreachableCase } from '../../../shared/utils';
-// import { Observable } from 'rxjs';
 
 interface OneListingForm {
   vehicleProduct: OneVehicle | null;
@@ -46,6 +38,10 @@ export class ListingFormComponent extends NgxRootFormComponent<OneListing, OneLi
   public dataOutput: EventEmitter<OneListing> = new EventEmitter();
 
   public ListingType: typeof ListingType = ListingType;
+
+  constructor(cd: ChangeDetectorRef) {
+    super(cd);
+  }
 
   // protected handleEmissionRate(): (obs$: Observable<OneListingForm>) => Observable<OneListingForm> {
   //   return NGX_SUB_FORM_HANDLE_VALUE_CHANGES_RATE_STRATEGIES.debounce(500);

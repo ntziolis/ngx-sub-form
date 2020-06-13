@@ -1,4 +1,4 @@
-import { EventEmitter, OnInit } from '@angular/core';
+import { EventEmitter, OnInit, Optional, ChangeDetectorRef } from '@angular/core';
 import isEqual from 'fast-deep-equal';
 import { Subject } from 'rxjs';
 import { filter, tap } from 'rxjs/operators';
@@ -24,12 +24,18 @@ export abstract class NgxRootFormComponent<ControlInterface, FormInterface = Con
 
   protected dataValue: ControlInterface | null = null;
 
-  constructor() {
+  // change detector only needs to be passed from root form
+  // for sub forms the sub-form-directive injects the change detector ref for us
+  constructor(@Optional() cd?: ChangeDetectorRef) {
     super();
     this.formGroup = new SubFormGroup<ControlInterface, FormInterface>({}) as TypedSubFormGroup<
       ControlInterface,
       FormInterface
     >;
+
+    if (cd) {
+      this.formGroup.setChangeDetector(cd);
+    }
   }
 
   public ngOnInit(): void {
