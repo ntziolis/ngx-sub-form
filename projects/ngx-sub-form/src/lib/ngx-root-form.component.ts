@@ -1,23 +1,17 @@
-import { EventEmitter, OnInit, Input } from '@angular/core';
+import { EventEmitter, OnInit } from '@angular/core';
 import isEqual from 'fast-deep-equal';
-import { BehaviorSubject, Subject } from 'rxjs';
+import { Subject } from 'rxjs';
 import { filter, tap } from 'rxjs/operators';
+
+import { isNullOrUndefined, takeUntilDestroyed } from './ngx-sub-form-utils';
 import { NgxSubFormRemapComponent } from './ngx-sub-form.component';
-import { takeUntilDestroyed, isNullOrUndefined } from './ngx-sub-form-utils';
+import { TypedSubFormGroup } from './ngx-sub-form.types';
 import { SubFormGroup } from './sub-form-group';
-import { FormGroup } from '@angular/forms';
 
 export abstract class NgxRootFormComponent<ControlInterface, FormInterface = ControlInterface>
   extends NgxSubFormRemapComponent<ControlInterface, FormInterface>
   implements OnInit {
   public abstract dataInput: Required<ControlInterface> | null | undefined;
-  // `Input` values are set while the `ngOnChanges` hook is ran
-  // and it does happen before the `ngOnInit` where we start
-  // listening to `dataInput$`. Therefore, it cannot be a `Subject`
-  // or we will miss the first value
-  protected dataInput$: BehaviorSubject<Required<ControlInterface> | null | undefined> = new BehaviorSubject<
-    Required<ControlInterface> | null | undefined
-  >(null);
 
   public abstract dataOutput: EventEmitter<ControlInterface>;
   // using a private variable `_dataOutput$` to be able to control the
@@ -32,22 +26,13 @@ export abstract class NgxRootFormComponent<ControlInterface, FormInterface = Con
 
   constructor() {
     super();
-    this.formGroup = new SubFormGroup<ControlInterface, FormInterface>({}) as any;
+    this.formGroup = new SubFormGroup<ControlInterface, FormInterface>({}) as TypedSubFormGroup<
+      ControlInterface,
+      FormInterface
+    >;
   }
 
   public ngOnInit(): void {
-    this.dataInput$
-      .pipe(
-        takeUntilDestroyed(this),
-        filter(newValue => !isEqual(newValue, this.formGroup.value)),
-        tap(newValue => {
-          if (!isNullOrUndefined(newValue)) {
-            this.formGroup.patchValue(newValue, undefined);
-          }
-        }),
-      )
-      .subscribe();
-
     this._dataOutput$
       .pipe(
         takeUntilDestroyed(this),
@@ -59,18 +44,12 @@ export abstract class NgxRootFormComponent<ControlInterface, FormInterface = Con
 
   /** @internal */
   protected onRegisterOnChangeHook(data: ControlInterface | null): boolean {
-    if (this.formGroup.invalid || isEqual(data, this.dataInput$.value)) {
+    if (this.formGroup.invalid || isEqual(data, this.dataInput)) {
       return false;
     }
 
     this.dataValue = data;
     return true;
-  }
-
-  // called by the DataInput decorator
-  /** @internal */
-  public dataInputUpdated(data: Required<ControlInterface> | null | undefined): void {
-    this.dataInput$.next(data);
   }
 
   protected transformToFormGroup(
@@ -85,7 +64,11 @@ export abstract class NgxRootFormComponent<ControlInterface, FormInterface = Con
   }
 
   public manualSave(): void {
-    this.dataValue = (this.formGroup as any).controlValue as ControlInterface;
+    // if (this.formGroup.valid) {
+    //   this.dataValue = this.formGroup.controlValue;
+    //   this._dataOutput$.next(this.dataValue);
+    // }
+    this.dataValue = this.formGroup.controlValue as ControlInterface;
     if (!isNullOrUndefined(this.dataValue) && this.formGroup.valid) {
       this._dataOutput$.next(this.dataValue);
     }
