@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
-import { FormControl, Validators } from '@angular/forms';
-import { Controls, NgxSubFormRemapComponent, subformComponentProviders, SubFormGroup } from 'ngx-sub-form';
+import { AbstractControl, FormArray, FormControl, FormGroup } from '@angular/forms';
+import { Controls, NgxSubFormRemapComponent, SubFormGroup } from 'ngx-sub-form';
 import {
   AssassinDroid,
   AstromechDroid,
@@ -9,6 +9,7 @@ import {
   OneDroid,
   ProtocolDroid,
 } from 'src/app/interfaces/droid.interface';
+
 import { UnreachableCase } from '../../../../shared/utils';
 
 interface OneDroidForm {
@@ -23,7 +24,6 @@ interface OneDroidForm {
   selector: 'app-droid-product',
   templateUrl: './droid-product.component.html',
   styleUrls: ['./droid-product.component.scss'],
-  providers: subformComponentProviders(DroidProductComponent),
 })
 export class DroidProductComponent extends NgxSubFormRemapComponent<OneDroid, OneDroidForm> {
   public DroidType = DroidType;

@@ -7,7 +7,6 @@ import {
   NgxFormWithArrayControls,
   NgxSubFormRemapComponent,
   SubFormArray,
-  subformComponentProviders,
   SubFormGroup,
 } from 'ngx-sub-form';
 
@@ -21,7 +20,6 @@ interface CrewMembersForm {
   selector: 'app-crew-members',
   templateUrl: './crew-members.component.html',
   styleUrls: ['./crew-members.component.scss'],
-  providers: subformComponentProviders(CrewMembersComponent),
 })
 export class CrewMembersComponent extends NgxSubFormRemapComponent<CrewMember[], CrewMembersForm>
   implements NgxFormWithArrayControls<CrewMembersForm> {

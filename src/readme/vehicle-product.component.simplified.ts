@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
-import { Controls, NgxSubFormRemapComponent, subformComponentProviders } from 'ngx-sub-form';
+import { Controls, NgxSubFormRemapComponent } from 'ngx-sub-form';
+
 import { VehicleType } from '../app/interfaces/vehicle.interface';
 import { UnreachableCase } from '../app/shared/utils';
 
@@ -33,7 +34,6 @@ interface OneVehicleForm {
   selector: 'app-vehicle-product',
   templateUrl: './vehicle-product.component.html',
   styleUrls: ['./vehicle-product.component.scss'],
-  providers: subformComponentProviders(VehicleProductComponent),
 })
 export class VehicleProductComponent extends NgxSubFormRemapComponent<OneVehicle, OneVehicleForm> {
   public VehicleType = VehicleType;
