@@ -11,9 +11,7 @@ export class SubFormDirective<TControl, TForm> implements OnChanges {
   constructor(private cd: ChangeDetectorRef) {}
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.subForm && this.subForm) {
-      console.log('SubFormDirective sub-form ngOnChanges');
       this.subForm.setChangeDetector(this.cd);
-      //this.cd.markForCheck();
     }
   }
 }
