@@ -250,14 +250,17 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
 }
 
 // this idea of this is that when a non sub form group is being updated the sub form group needs to be notifed
-export function patchFormControl(subFormGroup: SubFormGroup<any>, control: FormControl) {
-  const controlAny = control as any;
+export function patchFormControl<TControl, TForm>(subFormGroup: SubFormGroup<TControl, TForm>, control: FormControl) {
+  const patchableControl = control as FormControl & { isPatched: boolean };
 
-  const setValue = control.setValue.bind(control);
-  control.setValue = (value: any, options: any) => {
-    setValue(value, options);
-    subFormGroup.updateValue(options);
-  };
+  if (!patchableControl.isPatched) {
+    const setValue = patchableControl.setValue.bind(patchableControl);
+    patchableControl.setValue = (value: any, options: any) => {
+      setValue(value, options);
+      subFormGroup.updateValue(options);
+    };
+    patchableControl.isPatched = true;
+  }
 }
 
 export class SubFormArray<TControl, TForm = TControl> extends FormArray {
