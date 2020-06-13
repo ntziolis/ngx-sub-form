@@ -47,6 +47,7 @@ class CustomerEventEmitter<TControl, TForm = TControl> extends EventEmitter<TCon
 export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
   private subForm!: NgxSubFormComponent<TControl, TForm>;
 
+  public cd: ChangeDetectorRef | undefined;
   private isRoot = false;
   private _valueChanges: CustomerEventEmitter<TControl, TForm>;
   public controlValue!: TControl;
@@ -80,6 +81,10 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
 
     this.parentValidatorOrOpts = validatorOrOpts;
     this.parentAsyncValidator = asyncValidator;
+  }
+
+  setChangeDetector(cd: ChangeDetectorRef){
+    this.cd = cd;
   }
 
   get value() {
