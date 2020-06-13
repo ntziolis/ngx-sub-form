@@ -83,7 +83,7 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
     this.parentAsyncValidator = asyncValidator;
   }
 
-  setChangeDetector(cd: ChangeDetectorRef){
+  setChangeDetector(cd: ChangeDetectorRef) {
     this.cd = cd;
   }
 
@@ -329,5 +329,10 @@ export class SubFormArray<TControl, TForm = TControl> extends FormArray {
 
     (this.parent as any).updateValue(options);
     //this.updateValueAndValidity(options);
+  }
+
+  removeAt(index: number): void {
+    super.removeAt(index);
+    ((this.subForm.formGroup as unknown) as SubFormGroup<any>).updateValue(undefined);
   }
 }
