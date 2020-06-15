@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, EventEmitter, Input, Output } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, Output, ChangeDetectionStrategy } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { Controls, NgxRootFormComponent, SubFormGroup } from 'ngx-sub-form';
 import { ListingType, OneListing } from 'src/app/interfaces/listing.interface';
@@ -26,6 +26,7 @@ interface OneListingForm {
   selector: 'app-listing-form',
   templateUrl: './listing-form.component.html',
   styleUrls: ['./listing-form.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 // export class ListingFormComponent extends NgxAutomaticRootFormComponent<OneListing, OneListingForm>
 export class ListingFormComponent extends NgxRootFormComponent<OneListing, OneListingForm> {

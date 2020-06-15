@@ -30,7 +30,7 @@
 
       <!-- this is useful to make sure the type of the error is correct -->
       <!-- as it could be either an object or an array and AoT would notice if not correctly typed -->
-      <mat-error data-input-id-error *ngIf="formGroupErrors?.id?.required">
+      <mat-error data-input-id-error *ngIf="formGroup.controls.id.errors?.required">
         ID is required
       </mat-error>
 
@@ -45,7 +45,7 @@
         />
       </mat-form-field>
 
-      <mat-error data-input-title-error *ngIf="formGroupErrors?.title?.required">
+      <mat-error data-input-title-error *ngIf="formGroup.controls.title.errors?.required">
         Title is required
       </mat-error>
 
@@ -60,7 +60,7 @@
         />
       </mat-form-field>
 
-      <mat-error data-input-image-url-error *ngIf="formGroupErrors?.imageUrl?.required">
+      <mat-error data-input-image-url-error *ngIf="formGroup.controls.imageUrl.errors?.required">
         Image url is required
       </mat-error>
 
@@ -75,7 +75,7 @@
         />
       </mat-form-field>
 
-      <mat-error data-input-price-error *ngIf="formGroupErrors?.price?.required">
+      <mat-error data-input-price-error *ngIf="formGroup.controls.price.errors?.required">
         Price is required
       </mat-error>
 
@@ -130,8 +130,8 @@
     <!--
       this is an important test as we want to make sure that `formGroupErrors` is null when there's no error
       if we return an empty object the `*ngIf` condition would be considered valid
-    -->
-    <pre *ngIf="formGroupErrors as errors; else noError" data-errors>{{ errors | json }}</pre>
+    -->  
+    <pre *ngIf="formGroup.errors as errors; else noError" data-errors>{{ errors | json }}</pre>
 
     <ng-template #noError>
       <span data-no-error>
