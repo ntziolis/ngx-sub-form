@@ -1,4 +1,4 @@
-import { EventEmitter, OnInit, Optional, ChangeDetectorRef } from '@angular/core';
+import { EventEmitter, OnInit, Optional, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import isEqual from 'fast-deep-equal';
 import { Subject } from 'rxjs';
 import { filter, tap } from 'rxjs/operators';
@@ -10,7 +10,7 @@ import { SubFormGroup } from './sub-form-group';
 
 export abstract class NgxRootFormComponent<ControlInterface, FormInterface = ControlInterface>
   extends NgxSubFormRemapComponent<ControlInterface, FormInterface>
-  implements OnInit {
+  implements OnInit, OnDestroy {
   public abstract dataInput: Required<ControlInterface> | null | undefined;
 
   public abstract dataOutput: EventEmitter<ControlInterface>;
@@ -36,6 +36,10 @@ export abstract class NgxRootFormComponent<ControlInterface, FormInterface = Con
     if (cd) {
       this.formGroup.setChangeDetector(cd);
     }
+  }
+
+  // needed for take until destroyed
+  ngOnDestroy(): void {    
   }
 
   public ngOnInit(): void {
