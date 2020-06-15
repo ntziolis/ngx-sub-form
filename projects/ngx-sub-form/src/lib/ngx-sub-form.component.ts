@@ -55,8 +55,6 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
     ) as ControlsNames<FormInterface>;
   }
 
-  private controlKeys: (keyof FormInterface)[] = [];  
-
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['dataInput'] === undefined && changes['formGroup'] === undefined) {
       return;
@@ -90,8 +88,6 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
 
     // connect sub form group with current sub-form-component
     subForm.setSubForm(this);
-
-    this.controlKeys = (Object.keys(controls) as unknown) as (keyof FormInterface)[];
 
     const options = this.getFormGroupControlOptions() as AbstractControlOptions;
 
