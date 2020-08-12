@@ -1,6 +1,6 @@
 {
-  "name": "ngx-sub-form-demo",
-  "version": "0.0.0-development",
+  "name": "ngx-sub-form",
+  "version": "5.1.2",
   "license": "MIT",
   "scripts": {
     "------------------ BASE COMMANDS -----------------": "",
