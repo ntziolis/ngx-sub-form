@@ -106,5 +106,5 @@
   "fesm5": "dist/ngx-sub-form/fesm5/ngx-sub-form.js",
   "fesm2015": "dist/ngx-sub-form/fesm2015/ngx-sub-form.js",
   "typings": "dist/ngx-sub-form/ngx-sub-form.d.ts",
-  "metadata": "dist/ngx-sub-form/ngx-sub-form.metadata.json",  
+  "metadata": "dist/ngx-sub-form/ngx-sub-form.metadata.json"
 }
