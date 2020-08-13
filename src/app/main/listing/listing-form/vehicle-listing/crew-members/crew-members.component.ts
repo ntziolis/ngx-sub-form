@@ -1,13 +1,15 @@
 import { Component } from '@angular/core';
-import { FormArray, FormControl, Validators } from '@angular/forms';
+import { FormControl, Validators } from '@angular/forms';
 import {
-  Controls,
-  NgxSubFormRemapComponent,
-  subformComponentProviders,
   ArrayPropertyKey,
   ArrayPropertyValue,
+  Controls,
   NgxFormWithArrayControls,
+  NgxSubFormRemapComponent,
+  SubFormArray,
+  SubFormGroup,
 } from 'ngx-sub-form';
+
 import { CrewMember } from '../../../../../interfaces/crew-member.interface';
 
 interface CrewMembersForm {
@@ -18,17 +20,16 @@ interface CrewMembersForm {
   selector: 'app-crew-members',
   templateUrl: './crew-members.component.html',
   styleUrls: ['./crew-members.component.scss'],
-  providers: subformComponentProviders(CrewMembersComponent),
 })
 export class CrewMembersComponent extends NgxSubFormRemapComponent<CrewMember[], CrewMembersForm>
   implements NgxFormWithArrayControls<CrewMembersForm> {
   protected getFormControls(): Controls<CrewMembersForm> {
     return {
-      crewMembers: new FormArray([]),
+      crewMembers: new SubFormArray(this, []),
     };
   }
 
-  public getDefaultValues(): Partial<CrewMembersForm> | null {
+  public getDefaultValues(): Partial<CrewMembersForm> {
     return {
       crewMembers: [],
     };
@@ -45,11 +46,11 @@ export class CrewMembersComponent extends NgxSubFormRemapComponent<CrewMember[],
   }
 
   public removeCrewMember(index: number): void {
-    this.formGroupControls.crewMembers.removeAt(index);
+    this.formGroup.controls.crewMembers.removeAt(index);
   }
 
   public addCrewMember(): void {
-    this.formGroupControls.crewMembers.push(
+    this.formGroup.controls.crewMembers.push(
       this.createFormArrayControl('crewMembers', {
         firstName: '',
         lastName: '',
@@ -67,9 +68,9 @@ export class CrewMembersComponent extends NgxSubFormRemapComponent<CrewMember[],
     switch (key) {
       // note: the following string is type safe based on your form properties!
       case 'crewMembers':
-        return new FormControl(value, [Validators.required]);
+        return new SubFormGroup(value, [Validators.required]) as any;
       default:
-        return new FormControl(value);
+        return new SubFormGroup(value) as any;
     }
   }
 }

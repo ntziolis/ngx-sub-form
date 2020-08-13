@@ -4,7 +4,6 @@ import { FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
 import { TestBed, async, ComponentFixture } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { DataInput } from './ngx-sub-form.decorators';
 import { NgxAutomaticRootFormComponent } from './ngx-automatic-root-form.component';
 
 interface Vehicle {
@@ -60,7 +59,6 @@ class TestWrapperComponent {
   `,
 })
 class AutomaticRootFormComponent extends NgxAutomaticRootFormComponent<Vehicle> {
-  @DataInput()
   // tslint:disable-next-line:no-input-rename
   @Input('vehicle')
   public dataInput: Required<Vehicle> | null = null;
@@ -133,7 +131,7 @@ describe(`NgxAutomaticRootFormComponent`, () => {
       // it shouldn't block the new release though
       (expect(vehicleUpdatedSpy) as any).not.toHaveBeenCalled();
 
-      componentForm.formGroupControls.crewMemberCount.setValue(MAX_CREW_MEMBER_COUNT);
+      componentForm.formGroup.controls.crewMemberCount.setValue(MAX_CREW_MEMBER_COUNT);
       // shouldn't require to call `componentForm.manualSave()`!
 
       setTimeout(() => {

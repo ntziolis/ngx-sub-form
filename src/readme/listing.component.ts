@@ -3,7 +3,7 @@ import { FormControl, Validators } from '@angular/forms';
 import { OneDroid } from '../app/interfaces/droid.interface';
 import { OneListing } from '../app/interfaces/listing.interface';
 import { OneVehicle } from '../app/interfaces/vehicle.interface';
-import { Controls, DataInput, NgxAutomaticRootFormComponent } from 'ngx-sub-form';
+import { Controls, NgxAutomaticRootFormComponent, SubFormGroup } from 'ngx-sub-form';
 
 enum ListingType {
   VEHICLE = 'Vehicle',
@@ -28,12 +28,6 @@ export interface OneListingForm {
   styleUrls: ['./listing.component.scss'],
 })
 export class ListingComponent extends NgxAutomaticRootFormComponent<OneListing, OneListingForm> {
-  // as we're renaming the input, it'd be impossible for ngx-sub-form to guess
-  // the name of your input to then check within the `ngOnChanges` hook whether
-  // it has been updated or not
-  // another solution would be to ask you to use a setter and call a hook but
-  // this is too verbose, that's why we created a decorator `@DataInput`
-  @DataInput()
   // tslint:disable-next-line:no-input-rename
   @Input('listing')
   public dataInput: OneListing | null | undefined;
@@ -46,8 +40,8 @@ export class ListingComponent extends NgxAutomaticRootFormComponent<OneListing, 
 
   protected getFormControls(): Controls<OneListingForm> {
     return {
-      vehicleProduct: new FormControl(null),
-      droidProduct: new FormControl(null),
+      vehicleProduct: new SubFormGroup(null),
+      droidProduct: new SubFormGroup(null),
       listingType: new FormControl(null, Validators.required),
       id: new FormControl(null, Validators.required),
       title: new FormControl(null, Validators.required),

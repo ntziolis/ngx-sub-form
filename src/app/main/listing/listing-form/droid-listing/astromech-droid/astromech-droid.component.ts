@@ -1,13 +1,13 @@
 import { Component } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
-import { Controls, NgxSubFormComponent, subformComponentProviders } from 'ngx-sub-form';
+import { Controls, NgxSubFormComponent } from 'ngx-sub-form';
+
 import { AstromechDroid, AstromechDroidShape, DroidType } from '../../../../../interfaces/droid.interface';
 
 @Component({
   selector: 'app-astromech-droid',
   templateUrl: './astromech-droid.component.html',
   styleUrls: ['./astromech-droid.component.scss'],
-  providers: subformComponentProviders(AstromechDroidComponent),
 })
 export class AstromechDroidComponent extends NgxSubFormComponent<AstromechDroid> {
   public AstromechDroidShape = AstromechDroidShape;
@@ -22,7 +22,7 @@ export class AstromechDroidComponent extends NgxSubFormComponent<AstromechDroid>
     };
   }
 
-  public getDefaultValues(): Partial<AstromechDroid> | null {
+  public getDefaultValues(): Partial<AstromechDroid> {
     return {
       droidType: DroidType.ASTROMECH,
     };

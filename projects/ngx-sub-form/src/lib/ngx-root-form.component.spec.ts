@@ -5,7 +5,6 @@ import { FormControl, Validators, ReactiveFormsModule, FormArray } from '@angula
 import { BehaviorSubject } from 'rxjs';
 import { TestBed, async, ComponentFixture, fakeAsync, tick } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { DataInput } from './ngx-sub-form.decorators';
 import { NgxFormWithArrayControls } from './ngx-sub-form.types';
 
 interface Vehicle {
@@ -58,7 +57,6 @@ class TestWrapperComponent {
   `,
 })
 class RootFormComponent extends NgxRootFormComponent<Vehicle> {
-  @DataInput()
   // tslint:disable-next-line:no-input-rename
   @Input('vehicle')
   public dataInput: Required<Vehicle> | null | undefined = null;
@@ -103,7 +101,7 @@ describe(`NgxRootFormComponent`, () => {
   });
 
   it(`should populate the form with initial values`, () => {
-    expect(componentForm.formGroupValues).toEqual(getDefaultValues());
+    expect(componentForm.formGroup.value).toEqual(getDefaultValues());
   });
 
   it(`should update the form values if the input data changes`, () => {
@@ -188,7 +186,6 @@ interface VehiclesArrayForm {
 })
 class RootFormArrayComponent extends NgxRootFormComponent<Vehicle[], VehiclesArrayForm>
   implements NgxFormWithArrayControls<VehiclesArrayForm> {
-  @DataInput()
   // tslint:disable-next-line:no-input-rename
   @Input('vehicles')
   public dataInput: Required<Vehicle[]> | null | undefined = null;
@@ -258,13 +255,13 @@ describe(`NgxRootFormComponent with an array`, () => {
     componentFixture.detectChanges();
     componentForm = componentDebug.query(By.directive(RootFormArrayComponent)).componentInstance;
 
-    expect(componentForm.formGroupControls.vehicles.disabled).toBe(false);
-    expect(componentForm.formGroupControls.vehicles.at(0).disabled).toBe(false);
+    expect(componentForm.formGroup.controls.vehicles.disabled).toBe(false);
+    expect(componentForm.formGroup.controls.vehicles.at(0).disabled).toBe(false);
 
     component.disabled = true;
     componentFixture.detectChanges();
 
-    expect(componentForm.formGroupControls.vehicles.disabled).toBe(true);
-    expect(componentForm.formGroupControls.vehicles.at(0).disabled).toBe(true);
+    expect(componentForm.formGroup.controls.vehicles.disabled).toBe(true);
+    expect(componentForm.formGroup.controls.vehicles.at(0).disabled).toBe(true);
   });
 });

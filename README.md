@@ -76,7 +76,7 @@ You'll have access to the following properties (within your `.ts` **and** `.html
 
 - `formGroup`: The actual form group, useful to define the binding `[formGroup]="formGroup"` into the view
 - `formControlNames`: All the control names available in your form. Use it when defining a `formControlName` like that `<input [formControlName]="formControlNames.yourControl">`
-- `formGroupControls`: All the controls of your form, helpful to avoid doing `formGroup.get(formControlNames.yourControl)`, instead just do `formGroupControls.yourControl`
+- `formGroup.controls`: All the controls of your form, helpful to avoid doing `formGroup.get(formControlNames.yourControl)`, instead just do `formGroup.controls.yourControl`
 - `formGroupValues`: Access all the values of your form directly without doing `formGroup.get(formControlNames.yourControl).value`, instead just do `formGroupValues.yourControl` (and it'll be correctly typed!)
 - `formGroupErrors`: All the errors of the current form **including** the sub errors (if any), just use `formGroupErrors` or `formGroupErrors?.yourControl`. Notice the question mark in `formGroupErrors?.yourControl`, it **will return `null` if there's no error**
 
@@ -446,11 +446,11 @@ export class CrewMembersComponent extends NgxSubFormRemapComponent<CrewMember[],
   }
 
   public removeCrewMember(index: number): void {
-    this.formGroupControls.crewMembers.removeAt(index);
+    this.formGroup.controls.crewMembers.removeAt(index);
   }
 
   public addCrewMember(): void {
-    this.formGroupControls.crewMembers.push(
+    this.formGroup.controls.crewMembers.push(
       this.createFormArrayControl('crewMembers', {
         firstName: '',
         lastName: '',
@@ -487,7 +487,7 @@ Then our view will look like the following:
   <div
     class="crew-member"
     [formArrayName]="formControlNames.crewMembers"
-    *ngFor="let crewMember of formGroupControls.crewMembers.controls; let i = index"
+    *ngFor="let crewMember of formGroup.controls.crewMembers.controls; let i = index"
   >
     <app-crew-member [formControl]="crewMember"></app-crew-member>
 

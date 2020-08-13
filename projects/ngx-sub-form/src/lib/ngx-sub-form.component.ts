@@ -1,35 +1,28 @@
-import { OnDestroy, Directive, Component } from '@angular/core';
+import { AfterContentChecked, Directive, Input, OnChanges, SimpleChanges } from '@angular/core';
 import {
   AbstractControl,
   AbstractControlOptions,
-  ControlValueAccessor,
-  FormGroup,
-  ValidationErrors,
-  Validator,
+  AsyncValidatorFn,
   FormArray,
   FormControl,
+  ValidatorFn,
 } from '@angular/forms';
-import { merge, Observable, Subscription } from 'rxjs';
-import { delay, filter, map, startWith, withLatestFrom } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+
+import { coerceToAsyncValidator, coerceToValidator } from './abstract-control-utils';
 import {
+  ArrayPropertyKey,
   ControlMap,
   Controls,
   ControlsNames,
-  FormUpdate,
-  MissingFormControlsError,
-  FormErrors,
-  isNullOrUndefined,
   ControlsType,
-  ArrayPropertyKey,
+  isNullOrUndefined,
   TypedAbstractControl,
-  TypedFormGroup,
 } from './ngx-sub-form-utils';
-import { FormGroupOptions, NgxFormWithArrayControls, OnFormUpdate } from './ngx-sub-form.types';
+import { FormGroupOptions, NgxFormWithArrayControls, TypedSubFormGroup } from './ngx-sub-form.types';
+import { patchFormControl, SubFormGroup } from './sub-form-group';
 
-type MapControlFunction<FormInterface, MapValue> = (
-  ctrl: TypedAbstractControl<any>,
-  key: keyof FormInterface,
-) => MapValue;
+type MapControlFunction<FormInterface, MapValue> = (ctrl: AbstractControl, key: keyof FormInterface) => MapValue;
 type FilterControlFunction<FormInterface> = (
   ctrl: TypedAbstractControl<any>,
   key: keyof FormInterface,
@@ -39,36 +32,19 @@ type FilterControlFunction<FormInterface> = (
 @Directive()
 // tslint:disable-next-line: directive-class-suffix
 export abstract class NgxSubFormComponent<ControlInterface, FormInterface = ControlInterface>
-  implements ControlValueAccessor, Validator, OnDestroy, OnFormUpdate<FormInterface> {
-  public get formGroupControls(): ControlsType<FormInterface> {
-    // @note form-group-undefined we need the return null here because we do not want to expose the fact that
-    // the form can be undefined, it's handled internally to contain an Angular bug
-    if (!this.formGroup) {
-      return null as any;
-    }
+  implements OnChanges, AfterContentChecked {
+  // when developing the lib it's a good idea to set the formGroup type
+  // to current + `| undefined` to catch a bunch of possible issues
+  // see @note form-group-undefined
 
-    return (this.formGroup.controls as unknown) as ControlsType<FormInterface>;
-  }
+  // tslint:disable-next-line: no-input-rename
+  @Input('subForm') formGroup!: TypedSubFormGroup<ControlInterface, FormInterface>;
 
-  public get formGroupValues(): Required<FormInterface> {
-    // see @note form-group-undefined for non-null assertion reason
-    // tslint:disable-next-line:no-non-null-assertion
-    return this.mapControls(ctrl => ctrl.value)!;
-  }
+  protected emitNullOnDestroy = true;
+  protected emitInitialValueOnInit = true;
 
-  public get formGroupErrors(): FormErrors<FormInterface> {
-    const errors: FormErrors<FormInterface> = this.mapControls<ValidationErrors | ValidationErrors[] | null>(
-      ctrl => ctrl.errors,
-      (ctrl, _, isCtrlWithinFormArray) => (isCtrlWithinFormArray ? true : ctrl.invalid),
-      true,
-    ) as FormErrors<FormInterface>;
-
-    if (!this.formGroup.errors && (!errors || !Object.keys(errors).length)) {
-      return null;
-    }
-
-    return Object.assign({}, this.formGroup.errors ? { formGroup: this.formGroup.errors } : {}, errors);
-  }
+  // can't define them directly
+  protected abstract getFormControls(): Controls<FormInterface>;
 
   public get formControlNames(): ControlsNames<FormInterface> {
     // see @note form-group-undefined for as syntax
@@ -79,60 +55,133 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
     ) as ControlsNames<FormInterface>;
   }
 
-  private controlKeys: (keyof FormInterface)[] = [];
-
-  // when developing the lib it's a good idea to set the formGroup type
-  // to current + `| undefined` to catch a bunch of possible issues
-  // see @note form-group-undefined
-  public formGroup: TypedFormGroup<FormInterface> = (new FormGroup(
-    this._getFormControls(),
-    this.getFormGroupControlOptions() as AbstractControlOptions,
-  ) as unknown) as TypedFormGroup<FormInterface>;
-
-  protected onChange: Function | undefined = undefined;
-  protected onTouched: Function | undefined = undefined;
-  protected emitNullOnDestroy = true;
-  protected emitInitialValueOnInit = true;
-
-  private subscription: Subscription | undefined = undefined;
-
-  // a RootFormComponent with the disabled property set initially to `false`
-  // will call `setDisabledState` *before* the form is actually available
-  // and it wouldn't be disabled once available, therefore we use this flag
-  // to check when the FormGroup is created if we should disable it
-  private controlDisabled = false;
-
-  constructor() {
-    // if the form has default values, they should be applied straight away
-    const defaultValues: Partial<FormInterface> | null = this.getDefaultValues();
-    if (!!defaultValues) {
-      this.formGroup.reset(defaultValues, { emitEvent: false });
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['dataInput'] === undefined && changes['formGroup'] === undefined) {
+      return;
     }
 
-    // `setTimeout` and `updateValueAndValidity` are both required here
-    // indeed, if you check the demo you'll notice that without it, if
-    // you select `Droid` and `Assassin` for example the displayed errors
-    // are not yet defined for the field `assassinDroid`
-    // (until you change one of the value in that form)
-    setTimeout(() => {
-      if (this.formGroup) {
-        this.formGroup.updateValueAndValidity({ emitEvent: false });
+    if (!(this.formGroup instanceof SubFormGroup)) {
+      throw new Error('The subForm input needs to be of type SubFormGroup.');
+    }
 
-        if (this.controlDisabled) {
-          this.formGroup.disable();
+    Object.keys(this.formGroup.controls).forEach(key => {
+      this.formGroup.removeControl(key);
+    });
+
+    const subForm = this.formGroup;
+
+    const controls = this.getFormControls();
+    for (const key in controls) {
+      if (controls.hasOwnProperty(key)) {
+        const control = controls[key];
+
+        // we need to wire up the form controls with the sub form group
+        // this allows us to transform the sub form value to ControlInterface
+        // every time any of the form controls on the sub form change
+        if (control instanceof FormControl) {
+          patchFormControl(subForm, control);
+        }
+
+        this.formGroup.addControl(key, control);
+      }
+    }
+
+    // connect sub form group with current sub-form-component
+    subForm.setSubForm(this);
+
+    const options = this.getFormGroupControlOptions() as AbstractControlOptions;
+
+    const validators: ValidatorFn[] = [];
+    const asyncValidators: AsyncValidatorFn[] = [];
+
+    // get validators that were passed into the sub form group on the parent
+    if (subForm.parentValidatorOrOpts) {
+      const validator = coerceToValidator(subForm.parentValidatorOrOpts);
+      if (validator) {
+        validators.push(validator);
+      }
+    }
+
+    // get async validators that were passed into the sub form group on the parent
+    if (subForm.parentAsyncValidator) {
+      const validator = coerceToAsyncValidator(subForm.parentAsyncValidator);
+      if (validator) {
+        asyncValidators.push(validator);
+      }
+    }
+
+    // handle AbstractControlOptions from getFormGroupControlOptions
+    if (options) {
+      if (options.updateOn) {
+        // sadly there is no public metohd that lets us change the update strategy of an already created FormGroup
+        (this.formGroup as any)._setUpdateStrategy(options.updateOn);
+      }
+
+      if (options.validators) {
+        const validator = coerceToValidator(options.validators);
+        if (validator) {
+          validators.push(validator);
         }
       }
-    }, 0);
+
+      if (options.asyncValidators) {
+        const validator = coerceToAsyncValidator(options.asyncValidators);
+        if (validator) {
+          asyncValidators.push(validator);
+        }
+      }
+    }
+
+    // set validators / async validators on sub form group
+    if (validators.length > 0) {
+      this.formGroup.setValidators(validators);
+    }
+    if (asyncValidators.length > 0) {
+      this.formGroup.setAsyncValidators(asyncValidators);
+    }
+
+    // if the form has default values, they should be applied straight away
+    const defaultValues: Partial<FormInterface> | null = this.getDefaultValues();
+
+    // get default values for reset, if null fallback to undefined as there si a difference when calling reset
+    const transformedValue = this.transformFromFormGroup(defaultValues as FormInterface) || undefined;
+    // since this is the initial setting of form values do NOT emit an event
+
+    let mergedValues: ControlInterface;
+    if (Array.isArray(transformedValue)) {
+      mergedValues = subForm.controlValue;
+    } else {
+      const controlValue = (changes['dataInput'] ? (this as any)['dataInput'] : subForm.controlValue) || {};
+      mergedValues = { ...transformedValue, ...controlValue } as ControlInterface;
+    }
+
+    const formValue = this.transformToFormGroup(mergedValues, {});
+    this.handleFormArrayControls(formValue);
+
+    // self = false is critical here
+    // this allows the parent form to re-evaluate its status after each of its sub form has completed intialization
+    // we actually only need to call this on the deepest sub form in a tree (leaves)
+    // but there is no way to identify if there are sub forms on the current form + that are also rendered
+    // as only when sub forms are rendered the on changes method on the sub form is executed
+
+    // TODO decide if we want to emit an event when input control value != control value after intialization
+    // this happens for example when null is passed in but default values change the value of the inner form
+    this.formGroup.reset(mergedValues, { onlySelf: false, emitEvent: false });
   }
 
-  // can't define them directly
-  protected abstract getFormControls(): Controls<FormInterface>;
-  private _getFormControls(): Controls<FormInterface> {
-    const controls: Controls<FormInterface> = this.getFormControls();
-
-    this.controlKeys = (Object.keys(controls) as unknown) as (keyof FormInterface)[];
-
-    return controls;
+  ngAfterContentChecked(): void {
+    // TODO this runs too often, find out of this can be triggered differently
+    // checking if the form group has a change detector (root forms might not)
+    if (this.formGroup.cd) {
+      // if this is the root form
+      // OR if ist a sub form but the root form does not have a change detector
+      // we need to actually run change detection vs just marking for check
+      if (!this.formGroup.parent) {
+        this.formGroup.cd.detectChanges();
+      } else {
+        this.formGroup.cd.markForCheck();
+      }
+    }
   }
 
   private mapControls<MapValue>(
@@ -181,8 +230,6 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
     return controls;
   }
 
-  public onFormUpdate(formUpdate: FormUpdate<FormInterface>): void {}
-
   /**
    * Extend this method to provide custom local FormGroup level validation
    */
@@ -190,104 +237,18 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
     return {};
   }
 
-  public validate(): ValidationErrors | null {
-    if (
-      // @hack see where defining this.formGroup to undefined
-      !this.formGroup ||
-      this.formGroup.valid
-    ) {
-      return null;
-    }
-
-    return this.formGroupErrors;
-  }
-
-  // @todo could this be removed to avoid an override and just use `takeUntilDestroyed`?
-  public ngOnDestroy(): void {
-    // @hack there's a memory leak within Angular and those components
-    // are not correctly cleaned up which leads to error if a form is defined
-    // with validators and then it's been removed, the validator would still fail
-    // `as any` if because we do not want to define the formGroup as FormGroup | undefined
-    // everything related to undefined is handled internally and shouldn't be exposed to end user
-    (this.formGroup as any) = undefined;
-
-    if (this.subscription) {
-      this.subscription.unsubscribe();
-    }
-
-    if (this.emitNullOnDestroy && this.onChange) {
-      this.onChange(null);
-    }
-
-    this.onChange = undefined;
-  }
-
   // when getDefaultValues is defined, you do not need to specify the default values
   // in your form (the ones defined within the `getFormControls` method)
-  protected getDefaultValues(): Partial<FormInterface> | null {
-    return null;
+  protected getDefaultValues(): Partial<FormInterface> {
+    return {};
   }
 
-  public writeValue(obj: Required<ControlInterface> | null): void {
-    // @hack see where defining this.formGroup to undefined
+  public handleFormArrayControls(obj: any) {
+    // TODO check if this can still happen, it appreaded during development. might alerady be fixed
     if (!this.formGroup) {
       return;
     }
 
-    const defaultValues: Partial<FormInterface> | null = this.getDefaultValues();
-
-    const transformedValue: FormInterface | null = this.transformToFormGroup(
-      obj === undefined ? null : obj,
-      defaultValues,
-    );
-
-    if (isNullOrUndefined(transformedValue)) {
-      this.formGroup.reset(
-        // calling `reset` on a form with `null` throws an error but if nothing is passed
-        // (undefined) it will reset all the form values to null (as expected)
-        defaultValues === null ? undefined : defaultValues,
-        // emit to keep internal and external information about data in of control in sync, when
-        // null/undefined was passed into writeValue
-        // while internally being replaced with defaultValues
-        { emitEvent: isNullOrUndefined(obj) && !isNullOrUndefined(defaultValues) },
-      );
-    } else {
-      const missingKeys: (keyof FormInterface)[] = this.getMissingKeys(transformedValue);
-      if (missingKeys.length > 0) {
-        throw new MissingFormControlsError(missingKeys as string[]);
-      }
-
-      this.handleFormArrayControls(transformedValue);
-
-      // The next few lines are weird but it's as workaround.
-      // There are some shady behavior with the disabled state
-      // of a form. Apparently, using `setValue` on a disabled
-      // form does re-enable it *sometimes*, not always.
-      // related issues:
-      // https://github.com/angular/angular/issues/31506
-      // https://github.com/angular/angular/issues/22556
-      // but if you display `this.formGroup.disabled`
-      // before and after the `setValue` is called, it's the same
-      // result which is even weirder
-      const fgDisabled: boolean = this.formGroup.disabled;
-
-      this.formGroup.setValue(transformedValue, {
-        // emit to keep internal and external information about data in of control in sync, when
-        // null/undefined was passed into writeValue
-        // while internally being replaced with transformedValue
-        emitEvent: isNullOrUndefined(obj),
-      });
-
-      if (fgDisabled) {
-        this.formGroup.disable();
-      }
-    }
-
-    this.formGroup.markAsPristine();
-    this.formGroup.markAsUntouched();
-  }
-
-  private handleFormArrayControls(obj: any) {
     Object.entries(obj).forEach(([key, value]) => {
       if (this.formGroup.get(key) instanceof FormArray && Array.isArray(value)) {
         const formArray: FormArray = this.formGroup.get(key) as FormArray;
@@ -304,7 +265,9 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
           if (this.formIsFormWithArrayControls()) {
             formArray.insert(i, this.createFormArrayControl(key as ArrayPropertyKey<FormInterface>, value[i]));
           } else {
-            formArray.insert(i, new FormControl(value[i]));
+            const control = new FormControl(value[i]);
+            patchFormControl(this.formGroup, control);
+            formArray.insert(i, control);
           }
         }
       }
@@ -315,23 +278,10 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
     return typeof ((this as unknown) as NgxFormWithArrayControls<FormInterface>).createFormArrayControl === 'function';
   }
 
-  private getMissingKeys(transformedValue: FormInterface | null) {
-    // `controlKeys` can be an empty array, empty forms are allowed
-    const missingKeys: (keyof FormInterface)[] = this.controlKeys.reduce((keys, key) => {
-      if (isNullOrUndefined(transformedValue) || transformedValue[key] === undefined) {
-        keys.push(key);
-      }
-
-      return keys;
-    }, [] as (keyof FormInterface)[]);
-
-    return missingKeys;
-  }
-
   // when customizing the emission rate of your sub form component, remember not to **mutate** the stream
   // it is safe to throttle, debounce, delay, etc but using skip, first, last or mutating data inside
   // the stream will cause issues!
-  protected handleEmissionRate(): (obs$: Observable<FormInterface>) => Observable<FormInterface> {
+  public handleEmissionRate(): (obs$: Observable<ControlInterface | null>) => Observable<ControlInterface | null> {
     return obs$ => obs$;
   }
 
@@ -348,88 +298,6 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
   // shape of the form needs to be modified
   protected transformFromFormGroup(formValue: FormInterface): ControlInterface | null {
     return (formValue as any) as ControlInterface;
-  }
-
-  public registerOnChange(fn: (_: any) => void): void {
-    if (!this.formGroup) {
-      return;
-    }
-
-    this.onChange = fn;
-
-    interface KeyValueForm {
-      key: keyof FormInterface;
-      value: unknown;
-    }
-
-    const formControlNames: (keyof FormInterface)[] = Object.keys(this.formControlNames) as (keyof FormInterface)[];
-
-    const formValues: Observable<KeyValueForm>[] = formControlNames.map(key =>
-      ((this.formGroup.controls[key] as unknown) as AbstractControl).valueChanges.pipe(
-        startWith(this.formGroup.controls[key].value),
-        map(value => ({ key, value })),
-      ),
-    );
-
-    const lastKeyEmitted$: Observable<keyof FormInterface> = merge(...formValues.map(obs => obs.pipe(map(x => x.key))));
-
-    this.subscription = this.formGroup.valueChanges
-      .pipe(
-        // hook to give access to the observable for sub-classes
-        // this allow sub-classes (for example) to debounce, throttle, etc
-        this.handleEmissionRate(),
-        startWith(this.formGroup.value),
-        // this is required otherwise an `ExpressionChangedAfterItHasBeenCheckedError` will happen
-        // this is due to the fact that parent component will define a given state for the form that might
-        // be changed once the children are being initialized
-        delay(0),
-        filter(() => !!this.formGroup),
-        // detect which stream emitted last
-        withLatestFrom(lastKeyEmitted$),
-        map(([_, keyLastEmit], index) => {
-          if (index > 0 && this.onTouched) {
-            this.onTouched();
-          }
-
-          if (index > 0 || (index === 0 && this.emitInitialValueOnInit)) {
-            if (this.onChange) {
-              this.onChange(
-                this.transformFromFormGroup(
-                  // do not use the changes passed by `this.formGroup.valueChanges` here
-                  // as we've got a delay(0) above, on the next tick the form data might
-                  // be outdated and might result into an inconsistent state where a form
-                  // state is valid (base on latest value) but the previous value
-                  // (the one passed by `this.formGroup.valueChanges` would be the previous one)
-                  this.formGroup.value,
-                ),
-              );
-            }
-
-            const formUpdate: FormUpdate<FormInterface> = {};
-            formUpdate[keyLastEmit] = true;
-            this.onFormUpdate(formUpdate);
-          }
-        }),
-      )
-      .subscribe();
-  }
-
-  public registerOnTouched(fn: any): void {
-    this.onTouched = fn;
-  }
-
-  public setDisabledState(shouldDisable: boolean | undefined): void {
-    this.controlDisabled = !!shouldDisable;
-
-    if (!this.formGroup) {
-      return;
-    }
-
-    if (shouldDisable) {
-      this.formGroup.disable({ emitEvent: false });
-    } else {
-      this.formGroup.enable({ emitEvent: false });
-    }
   }
 }
 

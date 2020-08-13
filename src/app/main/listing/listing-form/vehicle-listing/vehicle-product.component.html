@@ -17,9 +17,9 @@
     </mat-select>
   </mat-form-field>
 
-  <div [ngSwitch]="formGroupValues.vehicleType">
-    <app-spaceship *ngSwitchCase="VehicleType.SPACESHIP" [formControlName]="formControlNames.spaceship"></app-spaceship>
+  <div [ngSwitch]="formGroup.controls.vehicleType.value">
+    <app-spaceship *ngSwitchCase="VehicleType.SPACESHIP" [subForm]="formGroup.controls.spaceship"></app-spaceship>
 
-    <app-speeder *ngSwitchCase="VehicleType.SPEEDER" [formControlName]="formControlNames.speeder"></app-speeder>
+    <app-speeder *ngSwitchCase="VehicleType.SPEEDER" [subForm]="formGroup.controls.speeder"></app-speeder>
   </div>
 </fieldset>

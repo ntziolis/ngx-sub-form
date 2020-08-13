@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
-import { FormControl, Validators } from '@angular/forms';
-import { Controls, NgxSubFormRemapComponent, subformComponentProviders } from 'ngx-sub-form';
+import { AbstractControl, FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
+import { Controls, NgxSubFormRemapComponent, SubFormGroup } from 'ngx-sub-form';
 import {
   AssassinDroid,
   AstromechDroid,
@@ -9,6 +9,7 @@ import {
   OneDroid,
   ProtocolDroid,
 } from 'src/app/interfaces/droid.interface';
+
 import { UnreachableCase } from '../../../../shared/utils';
 
 interface OneDroidForm {
@@ -23,17 +24,16 @@ interface OneDroidForm {
   selector: 'app-droid-product',
   templateUrl: './droid-product.component.html',
   styleUrls: ['./droid-product.component.scss'],
-  providers: subformComponentProviders(DroidProductComponent),
 })
 export class DroidProductComponent extends NgxSubFormRemapComponent<OneDroid, OneDroidForm> {
   public DroidType = DroidType;
 
   protected getFormControls(): Controls<OneDroidForm> {
     return {
-      protocolDroid: new FormControl(null),
-      medicalDroid: new FormControl(null),
-      astromechDroid: new FormControl(null),
-      assassinDroid: new FormControl(null),
+      protocolDroid: new SubFormGroup(null),
+      medicalDroid: new SubFormGroup(null),
+      astromechDroid: new SubFormGroup(null),
+      assassinDroid: new SubFormGroup(null),
       droidType: new FormControl(null, { validators: [Validators.required] }),
     };
   }
@@ -62,6 +62,7 @@ export class DroidProductComponent extends NgxSubFormRemapComponent<OneDroid, On
         return formValue.astromechDroid;
       case DroidType.ASSASSIN:
         return formValue.assassinDroid;
+      case undefined:
       case null:
         return null;
       default:

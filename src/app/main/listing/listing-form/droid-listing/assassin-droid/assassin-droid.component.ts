@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
-import { Controls, NgxSubFormComponent, subformComponentProviders } from 'ngx-sub-form';
+import { Controls, NgxSubFormComponent } from 'ngx-sub-form';
 import { AssassinDroid, AssassinDroidWeapon, DroidType } from 'src/app/interfaces/droid.interface';
 
 export const ASSASSIN_DROID_WEAPON_TEXT: { [K in AssassinDroidWeapon]: string } = {
@@ -14,7 +14,6 @@ export const ASSASSIN_DROID_WEAPON_TEXT: { [K in AssassinDroidWeapon]: string } 
   selector: 'app-assassin-droid',
   templateUrl: './assassin-droid.component.html',
   styleUrls: ['./assassin-droid.component.scss'],
-  providers: subformComponentProviders(AssassinDroidComponent),
 })
 export class AssassinDroidComponent extends NgxSubFormComponent<AssassinDroid> {
   public AssassinDroidWeapon = AssassinDroidWeapon;
@@ -30,7 +29,7 @@ export class AssassinDroidComponent extends NgxSubFormComponent<AssassinDroid> {
     };
   }
 
-  public getDefaultValues(): Partial<AssassinDroid> | null {
+  public getDefaultValues(): Partial<AssassinDroid> {
     return {
       droidType: DroidType.ASSASSIN,
       weapons: [],

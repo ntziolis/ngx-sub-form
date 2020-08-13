@@ -1,19 +1,11 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, Output, ChangeDetectionStrategy } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
-import {
-  Controls,
-  takeUntilDestroyed,
-  // NgxAutomaticRootFormComponent,
-  // NGX_SUB_FORM_HANDLE_VALUE_CHANGES_RATE_STRATEGIES,
-  DataInput,
-  NgxRootFormComponent,
-} from 'ngx-sub-form';
-import { tap } from 'rxjs/operators';
+import { Controls, NgxRootFormComponent, SubFormGroup } from 'ngx-sub-form';
 import { ListingType, OneListing } from 'src/app/interfaces/listing.interface';
+
 import { OneDroid } from '../../../interfaces/droid.interface';
 import { OneVehicle } from '../../../interfaces/vehicle.interface';
 import { UnreachableCase } from '../../../shared/utils';
-// import { Observable } from 'rxjs';
 
 interface OneListingForm {
   vehicleProduct: OneVehicle | null;
@@ -34,10 +26,10 @@ interface OneListingForm {
   selector: 'app-listing-form',
   templateUrl: './listing-form.component.html',
   styleUrls: ['./listing-form.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 // export class ListingFormComponent extends NgxAutomaticRootFormComponent<OneListing, OneListingForm>
 export class ListingFormComponent extends NgxRootFormComponent<OneListing, OneListingForm> {
-  @DataInput()
   // tslint:disable-next-line:no-input-rename
   @Input('listing')
   public dataInput: Required<OneListing> | null | undefined;
@@ -48,14 +40,18 @@ export class ListingFormComponent extends NgxRootFormComponent<OneListing, OneLi
 
   public ListingType: typeof ListingType = ListingType;
 
+  constructor(cd: ChangeDetectorRef) {
+    super(cd);
+  }
+
   // protected handleEmissionRate(): (obs$: Observable<OneListingForm>) => Observable<OneListingForm> {
   //   return NGX_SUB_FORM_HANDLE_VALUE_CHANGES_RATE_STRATEGIES.debounce(500);
   // }
 
   protected getFormControls(): Controls<OneListingForm> {
     return {
-      vehicleProduct: new FormControl(null),
-      droidProduct: new FormControl(null),
+      vehicleProduct: new SubFormGroup(null),
+      droidProduct: new SubFormGroup(null),
       listingType: new FormControl(null, Validators.required),
       id: new FormControl(null, Validators.required),
       title: new FormControl(null, Validators.required),
@@ -72,6 +68,7 @@ export class ListingFormComponent extends NgxRootFormComponent<OneListing, OneLi
         return droidProduct ? { product: droidProduct, listingType, ...commonValues } : null;
       case ListingType.VEHICLE:
         return vehicleProduct ? { product: vehicleProduct, listingType, ...commonValues } : null;
+      case undefined:
       case null:
         return null;
       default:
