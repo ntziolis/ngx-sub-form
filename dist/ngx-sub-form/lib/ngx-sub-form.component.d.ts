@@ -6,6 +6,7 @@ export declare abstract class NgxSubFormComponent<ControlInterface, FormInterfac
     formGroup: TypedSubFormGroup<ControlInterface, FormInterface>;
     protected emitNullOnDestroy: boolean;
     protected emitInitialValueOnInit: boolean;
+    private ngOnChangesWasCalled;
     protected abstract getFormControls(): Controls<FormInterface>;
     get formControlNames(): ControlsNames<FormInterface>;
     ngOnChanges(changes: SimpleChanges): void;

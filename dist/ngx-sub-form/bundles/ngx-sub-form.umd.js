@@ -584,6 +584,7 @@
             // see @note form-group-undefined
             this.emitNullOnDestroy = true;
             this.emitInitialValueOnInit = true;
+            this.ngOnChangesWasCalled = false;
         }
         Object.defineProperty(NgxSubFormComponent.prototype, "formControlNames", {
             get: function () {
@@ -595,6 +596,7 @@
         });
         NgxSubFormComponent.prototype.ngOnChanges = function (changes) {
             var _this = this;
+            this.ngOnChangesWasCalled = true;
             if (changes['dataInput'] === undefined && changes['formGroup'] === undefined) {
                 return;
             }
@@ -690,7 +692,7 @@
         NgxSubFormComponent.prototype.ngAfterContentChecked = function () {
             // TODO this runs too often, find out of this can be triggered differently
             // checking if the form group has a change detector (root forms might not)
-            if (this.formGroup.cd) {
+            if (this.ngOnChangesWasCalled && this.formGroup.cd) {
                 // if this is the root form
                 // OR if ist a sub form but the root form does not have a change detector
                 // we need to actually run change detection vs just marking for check
