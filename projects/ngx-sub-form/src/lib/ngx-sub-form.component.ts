@@ -1,4 +1,4 @@
-import { AfterContentChecked, Input, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
+import { AfterContentChecked, Input, OnChanges, SimpleChanges } from '@angular/core';
 import {
   AbstractControl,
   AbstractControlOptions,
@@ -6,7 +6,6 @@ import {
   FormArray,
   FormControl,
   ValidatorFn,
-  ValidationErrors,
 } from '@angular/forms';
 import { Observable } from 'rxjs';
 
@@ -17,7 +16,6 @@ import {
   Controls,
   ControlsNames,
   ControlsType,
-  FormErrors,
   isNullOrUndefined,
   TypedAbstractControl,
 } from './ngx-sub-form-utils';
@@ -228,7 +226,7 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
     }
 
     return controls;
-  }  
+  }
 
   /**
    * Extend this method to provide custom local FormGroup level validation
