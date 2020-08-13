@@ -28,7 +28,7 @@ export abstract class NgxRootFormComponent<ControlInterface, FormInterface = Con
 
   // change detector only needs to be passed from root form
   // for sub forms the sub-form-directive injects the change detector ref for us
-  constructor(@Optional() cd?: ChangeDetectorRef) {
+  constructor(cd: ChangeDetectorRef) {
     super();
     this.formGroup = new SubFormGroup<ControlInterface, FormInterface>({}) as TypedSubFormGroup<
       ControlInterface,

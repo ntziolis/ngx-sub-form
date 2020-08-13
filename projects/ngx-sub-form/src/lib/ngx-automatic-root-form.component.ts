@@ -12,7 +12,7 @@ type FormGroupStatus = 'DISABLED' | 'PENDING' | 'INVALID' | 'VALID';
 export abstract class NgxAutomaticRootFormComponent<ControlInterface, FormInterface = ControlInterface>
   extends NgxRootFormComponent<ControlInterface, FormInterface>
   implements OnInit, OnDestroy {
-  constructor(@Optional() cd: ChangeDetectorRef) {
+  constructor(cd: ChangeDetectorRef) {
     super(cd);
   }
 
