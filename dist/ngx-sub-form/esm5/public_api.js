@@ -1,0 +1,11 @@
+/*
+ * Public API Surface of sub-form
+ */
+export * from './lib/ngx-sub-form-utils';
+export * from './lib/sub-form-group';
+export * from './lib/ngx-sub-form.component';
+export * from './lib/ngx-root-form.component';
+export * from './lib/ngx-automatic-root-form.component';
+export * from './lib/sub-form.directive';
+export * from './lib/ngx-sub-form.module';
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoicHVibGljX2FwaS5qcyIsInNvdXJjZVJvb3QiOiJuZzovL25neC1zdWItZm9ybS8iLCJzb3VyY2VzIjpbInB1YmxpY19hcGkudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUE7O0dBRUc7QUFFSCxjQUFjLDBCQUEwQixDQUFDO0FBQ3pDLGNBQWMsc0JBQXNCLENBQUM7QUFDckMsY0FBYyw4QkFBOEIsQ0FBQztBQUM3QyxjQUFjLCtCQUErQixDQUFDO0FBQzlDLGNBQWMseUNBQXlDLENBQUM7QUFFeEQsY0FBYywwQkFBMEIsQ0FBQztBQUN6QyxjQUFjLDJCQUEyQixDQUFDIiwic291cmNlc0NvbnRlbnQiOlsiLypcclxuICogUHVibGljIEFQSSBTdXJmYWNlIG9mIHN1Yi1mb3JtXHJcbiAqL1xyXG5cclxuZXhwb3J0ICogZnJvbSAnLi9saWIvbmd4LXN1Yi1mb3JtLXV0aWxzJztcclxuZXhwb3J0ICogZnJvbSAnLi9saWIvc3ViLWZvcm0tZ3JvdXAnO1xyXG5leHBvcnQgKiBmcm9tICcuL2xpYi9uZ3gtc3ViLWZvcm0uY29tcG9uZW50JztcclxuZXhwb3J0ICogZnJvbSAnLi9saWIvbmd4LXJvb3QtZm9ybS5jb21wb25lbnQnO1xyXG5leHBvcnQgKiBmcm9tICcuL2xpYi9uZ3gtYXV0b21hdGljLXJvb3QtZm9ybS5jb21wb25lbnQnO1xyXG5leHBvcnQgKiBmcm9tICcuL2xpYi9uZ3gtc3ViLWZvcm0udHlwZXMnO1xyXG5leHBvcnQgKiBmcm9tICcuL2xpYi9zdWItZm9ybS5kaXJlY3RpdmUnO1xyXG5leHBvcnQgKiBmcm9tICcuL2xpYi9uZ3gtc3ViLWZvcm0ubW9kdWxlJzsiXX0=
