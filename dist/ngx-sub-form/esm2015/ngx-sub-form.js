@@ -1,6 +1,0 @@
-/**
- * Generated bundle index. Do not edit.
- */
-export * from './public_api';
-export { SUB_FORM_COMPONENT_TOKEN as ɵa } from './lib/ngx-sub-form-tokens';
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoibmd4LXN1Yi1mb3JtLmpzIiwic291cmNlUm9vdCI6Im5nOi8vbmd4LXN1Yi1mb3JtLyIsInNvdXJjZXMiOlsibmd4LXN1Yi1mb3JtLnRzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBOztHQUVHO0FBRUgsY0FBYyxjQUFjLENBQUM7QUFFN0IsT0FBTyxFQUFDLHdCQUF3QixJQUFJLEVBQUUsRUFBQyxNQUFNLDJCQUEyQixDQUFDIiwic291cmNlc0NvbnRlbnQiOlsiLyoqXG4gKiBHZW5lcmF0ZWQgYnVuZGxlIGluZGV4LiBEbyBub3QgZWRpdC5cbiAqL1xuXG5leHBvcnQgKiBmcm9tICcuL3B1YmxpY19hcGknO1xuXG5leHBvcnQge1NVQl9GT1JNX0NPTVBPTkVOVF9UT0tFTiBhcyDJtWF9IGZyb20gJy4vbGliL25neC1zdWItZm9ybS10b2tlbnMnOyJdfQ==
