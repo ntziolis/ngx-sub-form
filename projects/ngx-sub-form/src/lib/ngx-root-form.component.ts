@@ -1,4 +1,4 @@
-import { Directive, EventEmitter, OnInit, Optional, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Directive, EventEmitter, OnDestroy, OnInit, Optional } from '@angular/core';
 import isEqual from 'fast-deep-equal';
 import { Subject } from 'rxjs';
 import { filter, tap } from 'rxjs/operators';
@@ -41,8 +41,7 @@ export abstract class NgxRootFormComponent<ControlInterface, FormInterface = Con
   }
 
   // needed for take until destroyed
-  ngOnDestroy(): void {    
-  }
+  ngOnDestroy(): void {}
 
   public ngOnInit(): void {
     this._dataOutput$

@@ -1,14 +1,13 @@
-import {
-  ControlValueAccessor,
-  NG_VALUE_ACCESSOR,
-  NG_VALIDATORS,
-  ValidationErrors,
-  FormControl,
-  FormArray,
-  AbstractControl,
-  FormGroup,
-} from '@angular/forms';
 import { forwardRef, OnDestroy, Provider } from '@angular/core';
+import {
+  AbstractControl,
+  FormArray,
+  FormControl,
+  FormGroup,
+  NG_VALIDATORS,
+  NG_VALUE_ACCESSOR,
+  ValidationErrors,
+} from '@angular/forms';
 import { Observable, Subject, timer } from 'rxjs';
 import { debounce, takeUntil } from 'rxjs/operators';
 

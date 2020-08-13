@@ -1,8 +1,9 @@
-import { OnInit, OnDestroy, ChangeDetectorRef, Optional } from '@angular/core';
+import { ChangeDetectorRef, Directive, OnDestroy, OnInit, Optional } from '@angular/core';
+import { combineLatest, Observable } from 'rxjs';
+import { filter, startWith, tap } from 'rxjs/operators';
+
 import { NgxRootFormComponent } from './ngx-root-form.component';
 import { takeUntilDestroyed } from './ngx-sub-form-utils';
-import { filter, tap, startWith } from 'rxjs/operators';
-import { combineLatest, Observable } from 'rxjs';
 
 type FormGroupStatus = 'DISABLED' | 'PENDING' | 'INVALID' | 'VALID';
 

@@ -1,6 +1,7 @@
-import { FormControl, FormGroup, ValidationErrors } from '@angular/forms';
+import { FormControl, ValidationErrors } from '@angular/forms';
 import { Observable } from 'rxjs';
-import { ArrayPropertyKey, ArrayPropertyValue, Controls, ControlsType, FormUpdate, TypedFormGroup } from './ngx-sub-form-utils';
+
+import { ArrayPropertyKey, ArrayPropertyValue, ControlsType, FormUpdate, TypedFormGroup } from './ngx-sub-form-utils';
 import { SubFormGroup } from './sub-form-group';
 
 // @deprecated
@@ -42,7 +43,6 @@ export interface FormGroupOptions<T> {
 export interface NgxFormWithArrayControls<T> {
   createFormArrayControl(key: ArrayPropertyKey<T>, value: ArrayPropertyValue<T>): FormControl;
 }
-
 
 export interface TypedSubFormGroup<TControl, TForm = TControl> extends SubFormGroup<TControl, TForm> {
   controls: ControlsType<TForm>;
