@@ -1,4 +1,4 @@
-import { AfterContentChecked, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { AfterContentChecked, Directive, Input, OnChanges, SimpleChanges } from '@angular/core';
 import {
   AbstractControl,
   AbstractControlOptions,
@@ -29,6 +29,8 @@ type FilterControlFunction<FormInterface> = (
   isCtrlWithinFormArray: boolean,
 ) => boolean;
 
+@Directive()
+// tslint:disable-next-line: directive-class-suffix
 export abstract class NgxSubFormComponent<ControlInterface, FormInterface = ControlInterface>
   implements OnChanges, AfterContentChecked {
   // when developing the lib it's a good idea to set the formGroup type
@@ -299,6 +301,8 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
   }
 }
 
+@Directive()
+// tslint:disable-next-line: directive-class-suffix
 export abstract class NgxSubFormRemapComponent<ControlInterface, FormInterface> extends NgxSubFormComponent<
   ControlInterface,
   FormInterface

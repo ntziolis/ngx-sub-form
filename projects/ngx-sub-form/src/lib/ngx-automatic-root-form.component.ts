@@ -6,6 +6,8 @@ import { combineLatest, Observable } from 'rxjs';
 
 type FormGroupStatus = 'DISABLED' | 'PENDING' | 'INVALID' | 'VALID';
 
+@Directive()
+// tslint:disable-next-line: directive-class-suffix
 export abstract class NgxAutomaticRootFormComponent<ControlInterface, FormInterface = ControlInterface>
   extends NgxRootFormComponent<ControlInterface, FormInterface>
   implements OnInit, OnDestroy {

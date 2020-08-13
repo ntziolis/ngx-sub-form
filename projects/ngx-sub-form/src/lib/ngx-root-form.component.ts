@@ -1,4 +1,4 @@
-import { EventEmitter, OnInit, Optional, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Directive, EventEmitter, OnInit, Optional, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import isEqual from 'fast-deep-equal';
 import { Subject } from 'rxjs';
 import { filter, tap } from 'rxjs/operators';
@@ -8,6 +8,8 @@ import { NgxSubFormRemapComponent } from './ngx-sub-form.component';
 import { TypedSubFormGroup } from './ngx-sub-form.types';
 import { SubFormGroup } from './sub-form-group';
 
+@Directive()
+// tslint:disable-next-line: directive-class-suffix
 export abstract class NgxRootFormComponent<ControlInterface, FormInterface = ControlInterface>
   extends NgxSubFormRemapComponent<ControlInterface, FormInterface>
   implements OnInit, OnDestroy {
