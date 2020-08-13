@@ -60,6 +60,10 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
       return;
     }
 
+    if (!this.formGroup) {
+      throw new Error('The subForm input was not provided but is required.');
+    }
+
     if (!(this.formGroup instanceof SubFormGroup)) {
       throw new Error('The subForm input needs to be of type SubFormGroup.');
     }
@@ -172,7 +176,7 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
   ngAfterContentChecked(): void {
     // TODO this runs too often, find out of this can be triggered differently
     // checking if the form group has a change detector (root forms might not)
-    if (this.formGroup.cd) {
+    if (this.formGroup?.cd) {
       // if this is the root form
       // OR if ist a sub form but the root form does not have a change detector
       // we need to actually run change detection vs just marking for check
