@@ -11,7 +11,7 @@ import {
 
 import { NgxSubFormComponent } from './ngx-sub-form.component';
 
-class CustomerEventEmitter<TControl, TForm = TControl> extends EventEmitter<TControl> {
+class CustomEventEmitter<TControl, TForm = TControl> extends EventEmitter<TControl> {
   private subForm!: NgxSubFormComponent<TControl, TForm>;
   private transformToFormGroup!: NgxSubFormComponent<TControl, TForm>['transformToFormGroup'];
   private transformFromFormGroup!: NgxSubFormComponent<TControl, TForm>['transformFromFormGroup'];
@@ -49,7 +49,7 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
 
   public cd: ChangeDetectorRef | undefined;
   private isRoot = false;
-  private _valueChanges: CustomerEventEmitter<TControl, TForm>;
+  private _valueChanges: CustomEventEmitter<TControl, TForm>;
   public controlValue!: TControl;
   private transformToFormGroup!: NgxSubFormComponent<TControl, TForm>['transformToFormGroup'];
   private transformFromFormGroup!: NgxSubFormComponent<TControl, TForm>['transformFromFormGroup'];
@@ -75,7 +75,7 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
 
     this.controlValue = (value || undefined) as TControl;
 
-    this._valueChanges = new CustomerEventEmitter();
+    this._valueChanges = new CustomEventEmitter();
 
     (this.valueChanges as any) = this._valueChanges;
 
@@ -267,7 +267,7 @@ export class SubFormArray<TControl, TForm = TControl> extends FormArray {
   private subForm!: NgxSubFormComponent<TControl, TForm>;
 
   private isRoot = false;
-  private _valueChanges: CustomerEventEmitter<TControl, TForm>;
+  private _valueChanges: CustomEventEmitter<TControl, TForm>;
   public controlValue!: TControl[];
   private transformToFormGroup!: NgxSubFormComponent<TControl, TForm>['transformToFormGroup'];
   private transformFromFormGroup!: NgxSubFormComponent<TControl, TForm>['transformFromFormGroup'];
@@ -285,7 +285,7 @@ export class SubFormArray<TControl, TForm = TControl> extends FormArray {
     // its important to NOT set validators here as this will trigger calls to value before setSubForm was called
     super(controls);
 
-    this._valueChanges = new CustomerEventEmitter();
+    this._valueChanges = new CustomEventEmitter();
     (this.valueChanges as any) = this._valueChanges;
 
     this.parentValidatorOrOpts = validatorOrOpts;
