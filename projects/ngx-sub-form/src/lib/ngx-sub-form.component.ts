@@ -42,6 +42,7 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
 
   protected emitNullOnDestroy = true;
   protected emitInitialValueOnInit = true;
+  private ngOnChangesWasCalled = false;
 
   // can't define them directly
   protected abstract getFormControls(): Controls<FormInterface>;
@@ -56,6 +57,7 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+    this.ngOnChangesWasCalled = true;
     if (changes['dataInput'] === undefined && changes['formGroup'] === undefined) {
       return;
     }
@@ -172,7 +174,7 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
   ngAfterContentChecked(): void {
     // TODO this runs too often, find out of this can be triggered differently
     // checking if the form group has a change detector (root forms might not)
-    if (this.formGroup.cd) {
+    if (this.ngOnChangesWasCalled && this.formGroup.cd) {
       // if this is the root form
       // OR if ist a sub form but the root form does not have a change detector
       // we need to actually run change detection vs just marking for check
