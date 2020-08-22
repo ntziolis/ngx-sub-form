@@ -210,6 +210,16 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
     // const controlValue = (this.transformFromFormGroup((value as unknown) as TForm) as unknown) as TControl;
   }
 
+  private getControlValue(control: AbstractControl): any {
+    if (control instanceof SubFormGroup) {
+      return control.controlValue;
+    } else if (control instanceof SubFormArray) {
+      return control.controls.map(arrayElementControl => this.getControlValue(arrayElementControl));
+    } else {
+      return control.value;
+    }
+  }
+
   updateValue(options: any) {
     if (!this.subForm) {
       return;
@@ -218,11 +228,7 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
     const formValue = {} as any;
     for (const [key, value] of Object.entries(this.subForm.formGroup.controls)) {
       const control = value as AbstractControl;
-      if (control instanceof SubFormGroup) {
-        formValue[key] = control.controlValue;
-      } else {
-        formValue[key] = control.value;
-      }
+      formValue[key] = this.getControlValue(control);
     }
 
     const controlValue = (this.transformFromFormGroup(formValue || ({} as TForm)) as unknown) as TControl;
@@ -268,7 +274,7 @@ export class SubFormArray<TControl, TForm = TControl> extends FormArray {
 
   private isRoot = false;
   private _valueChanges: CustomEventEmitter<TControl, TForm>;
-  public controlValue!: TControl[];
+  //public controlValue!: TControl[];
   private transformToFormGroup!: NgxSubFormComponent<TControl, TForm>['transformToFormGroup'];
   private transformFromFormGroup!: NgxSubFormComponent<TControl, TForm>['transformFromFormGroup'];
   private getDefaultValues!: NgxSubFormComponent<TControl, TForm>['getDefaultValues'];
@@ -308,8 +314,8 @@ export class SubFormArray<TControl, TForm = TControl> extends FormArray {
     this.transformToFormGroup = (obj: TControl | null, defaultValues: Partial<TForm>) => {
       return this.subForm['transformToFormGroup'](obj, defaultValues) || ({} as TForm);
     };
-    this.transformFromFormGroup = this.subForm['transformFromFormGroup'];
-    this.getDefaultValues = this.subForm['getDefaultValues'];
+    this.transformFromFormGroup = this.subForm['transformFromFormGroup'].bind(this.subForm);
+    this.getDefaultValues = this.subForm['getDefaultValues'].bind(this.subForm);
   }
 
   setValue(value: any, options: any) {
