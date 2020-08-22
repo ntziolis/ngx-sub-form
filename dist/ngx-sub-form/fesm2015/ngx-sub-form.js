@@ -140,8 +140,8 @@ class SubFormGroup extends FormGroup {
         this.transformToFormGroup = (obj, defaultValues) => {
             return this.subForm['transformToFormGroup'](obj, defaultValues) || {};
         };
-        this.transformFromFormGroup = this.subForm['transformFromFormGroup'];
-        this.getDefaultValues = this.subForm['getDefaultValues'];
+        this.transformFromFormGroup = this.subForm['transformFromFormGroup'].bind(this.subForm);
+        this.getDefaultValues = this.subForm['getDefaultValues'].bind(this.subForm);
     }
     getRawValue() {
         const rawValue = super.getRawValue();
@@ -355,7 +355,9 @@ class NgxSubFormComponent {
         return this.mapControls((_, key) => key, () => true, false);
     }
     ngOnChanges(changes) {
-        if (changes['dataInput'] === undefined && changes['formGroup'] === undefined) {
+        if (changes['dataInput'] === undefined &&
+            (changes['formGroup'] === undefined ||
+                (changes['formGroup'].firstChange && !changes['formGroup'].currentValue))) {
             return;
         }
         if (!this.formGroup) {
@@ -451,20 +453,18 @@ class NgxSubFormComponent {
         this.formGroup.reset(mergedValues, { onlySelf: false, emitEvent: false });
     }
     ngAfterContentChecked() {
-        var _a;
-        // TODO this runs too often, find out of this can be triggered differently
-        // checking if the form group has a change detector (root forms might not)
-        if ((_a = this.formGroup) === null || _a === void 0 ? void 0 : _a.cd) {
-            // if this is the root form
-            // OR if ist a sub form but the root form does not have a change detector
-            // we need to actually run change detection vs just marking for check
-            if (!this.formGroup.parent) {
-                this.formGroup.cd.detectChanges();
-            }
-            else {
-                this.formGroup.cd.markForCheck();
-            }
-        }
+        // // TODO this runs too often, find out of this can be triggered differently
+        // // checking if the form group has a change detector (root forms might not)
+        // if (this.formGroup?.cd) {
+        //   // if this is the root form
+        //   // OR if ist a sub form but the root form does not have a change detector
+        //   // we need to actually run change detection vs just marking for check
+        //   if (!this.formGroup.parent) {
+        //     this.formGroup.cd.detectChanges();
+        //   } else {
+        //     this.formGroup.cd.markForCheck();
+        //   }
+        // }
     }
     mapControls(mapControl, filterControl = () => true, recursiveIfArray = true) {
         if (!this.formGroup) {
