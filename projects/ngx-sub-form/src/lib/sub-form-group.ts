@@ -126,8 +126,8 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
     this.transformToFormGroup = (obj: TControl | null, defaultValues: Partial<TForm>) => {
       return this.subForm['transformToFormGroup'](obj, defaultValues) || ({} as TForm);
     };
-    this.transformFromFormGroup = this.subForm['transformFromFormGroup'];
-    this.getDefaultValues = this.subForm['getDefaultValues'];
+    this.transformFromFormGroup = this.subForm['transformFromFormGroup'].bind(this.subForm);
+    this.getDefaultValues = this.subForm['getDefaultValues'].bind(this.subForm);
   }
 
   getRawValue(): any {
