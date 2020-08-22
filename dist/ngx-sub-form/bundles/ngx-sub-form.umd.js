@@ -423,6 +423,18 @@
             _super.prototype.reset.call(this, formValue, options);
             // const controlValue = (this.transformFromFormGroup((value as unknown) as TForm) as unknown) as TControl;
         };
+        SubFormGroup.prototype.getControlValue = function (control) {
+            var _this = this;
+            if (control instanceof SubFormGroup) {
+                return control.controlValue;
+            }
+            else if (control instanceof SubFormArray) {
+                return control.controls.map(function (arrayElementControl) { return _this.getControlValue(arrayElementControl); });
+            }
+            else {
+                return control.value;
+            }
+        };
         SubFormGroup.prototype.updateValue = function (options) {
             var e_1, _a;
             if (!this.subForm) {
@@ -433,12 +445,7 @@
                 for (var _b = __values(Object.entries(this.subForm.formGroup.controls)), _c = _b.next(); !_c.done; _c = _b.next()) {
                     var _d = __read(_c.value, 2), key = _d[0], value = _d[1];
                     var control = value;
-                    if (control instanceof SubFormGroup) {
-                        formValue[key] = control.controlValue;
-                    }
-                    else {
-                        formValue[key] = control.value;
-                    }
+                    formValue[key] = this.getControlValue(control);
                 }
             }
             catch (e_1_1) { e_1 = { error: e_1_1 }; }
@@ -506,8 +513,8 @@
             this.transformToFormGroup = function (obj, defaultValues) {
                 return _this.subForm['transformToFormGroup'](obj, defaultValues) || {};
             };
-            this.transformFromFormGroup = this.subForm['transformFromFormGroup'];
-            this.getDefaultValues = this.subForm['getDefaultValues'];
+            this.transformFromFormGroup = this.subForm['transformFromFormGroup'].bind(this.subForm);
+            this.getDefaultValues = this.subForm['getDefaultValues'].bind(this.subForm);
         };
         SubFormArray.prototype.setValue = function (value, options) {
             _super.prototype.setValue.call(this, value, options);

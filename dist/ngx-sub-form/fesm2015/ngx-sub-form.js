@@ -204,6 +204,17 @@ class SubFormGroup extends FormGroup {
         super.reset(formValue, options);
         // const controlValue = (this.transformFromFormGroup((value as unknown) as TForm) as unknown) as TControl;
     }
+    getControlValue(control) {
+        if (control instanceof SubFormGroup) {
+            return control.controlValue;
+        }
+        else if (control instanceof SubFormArray) {
+            return control.controls.map(arrayElementControl => this.getControlValue(arrayElementControl));
+        }
+        else {
+            return control.value;
+        }
+    }
     updateValue(options) {
         if (!this.subForm) {
             return;
@@ -211,12 +222,7 @@ class SubFormGroup extends FormGroup {
         const formValue = {};
         for (const [key, value] of Object.entries(this.subForm.formGroup.controls)) {
             const control = value;
-            if (control instanceof SubFormGroup) {
-                formValue[key] = control.controlValue;
-            }
-            else {
-                formValue[key] = control.value;
-            }
+            formValue[key] = this.getControlValue(control);
         }
         const controlValue = this.transformFromFormGroup(formValue || {});
         this.controlValue = controlValue;
@@ -271,8 +277,8 @@ class SubFormArray extends FormArray {
         this.transformToFormGroup = (obj, defaultValues) => {
             return this.subForm['transformToFormGroup'](obj, defaultValues) || {};
         };
-        this.transformFromFormGroup = this.subForm['transformFromFormGroup'];
-        this.getDefaultValues = this.subForm['getDefaultValues'];
+        this.transformFromFormGroup = this.subForm['transformFromFormGroup'].bind(this.subForm);
+        this.getDefaultValues = this.subForm['getDefaultValues'].bind(this.subForm);
     }
     setValue(value, options) {
         super.setValue(value, options);
