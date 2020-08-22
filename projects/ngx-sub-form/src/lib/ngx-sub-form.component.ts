@@ -56,7 +56,11 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['dataInput'] === undefined && changes['formGroup'] === undefined) {
+    if (
+      changes['dataInput'] === undefined &&
+      (changes['formGroup'] === undefined ||
+        (changes['formGroup'].firstChange && !changes['formGroup'].currentValue))
+    ) {
       return;
     }
 
@@ -174,18 +178,18 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
   }
 
   ngAfterContentChecked(): void {
-    // TODO this runs too often, find out of this can be triggered differently
-    // checking if the form group has a change detector (root forms might not)
-    if (this.formGroup?.cd) {
-      // if this is the root form
-      // OR if ist a sub form but the root form does not have a change detector
-      // we need to actually run change detection vs just marking for check
-      if (!this.formGroup.parent) {
-        this.formGroup.cd.detectChanges();
-      } else {
-        this.formGroup.cd.markForCheck();
-      }
-    }
+    // // TODO this runs too often, find out of this can be triggered differently
+    // // checking if the form group has a change detector (root forms might not)
+    // if (this.formGroup?.cd) {
+    //   // if this is the root form
+    //   // OR if ist a sub form but the root form does not have a change detector
+    //   // we need to actually run change detection vs just marking for check
+    //   if (!this.formGroup.parent) {
+    //     this.formGroup.cd.detectChanges();
+    //   } else {
+    //     this.formGroup.cd.markForCheck();
+    //   }
+    // }
   }
 
   private mapControls<MapValue>(
