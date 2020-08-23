@@ -58,8 +58,7 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
   ngOnChanges(changes: SimpleChanges): void {
     if (
       changes['dataInput'] === undefined &&
-      (changes['formGroup'] === undefined ||
-        (changes['formGroup'].firstChange && !changes['formGroup'].currentValue))
+      (changes['formGroup'] === undefined || (changes['formGroup'].firstChange && !changes['formGroup'].currentValue))
     ) {
       return;
     }
@@ -72,6 +71,29 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
       throw new Error('The subForm input needs to be of type SubFormGroup.');
     }
 
+    const dataInputHasChanged = changes['dataInput'] !== undefined
+    this._initializeFormGroup(dataInputHasChanged);
+  }
+
+  ngAfterContentChecked(): void {
+    // TODO this runs too often, find out of this can be triggered differently
+    // checking if the form group has a change detector (root forms might not)
+    if (this.formGroup?.cd) {
+      // if this is the root form
+      // OR if ist a sub form but the root form does not have a change detector
+      // we need to actually run change detection vs just marking for check
+      if (!this.formGroup.parent) {
+        this.formGroup.cd.detectChanges();
+      } else {
+        this.formGroup.cd.markForCheck();
+      }
+    }
+  }
+
+  // is usually called by ngOnChanges
+  // but if root form is used without input attributes ngOnChanges might not be called
+  // hence if it wasn't called yet it is called from ngOnInit in root form
+  protected _initializeFormGroup(dataInputHasChanged: boolean = false) {
     Object.keys(this.formGroup.controls).forEach(key => {
       this.formGroup.removeControl(key);
     });
@@ -159,7 +181,7 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
     if (Array.isArray(transformedValue)) {
       mergedValues = subForm.controlValue;
     } else {
-      const controlValue = (changes['dataInput'] ? (this as any)['dataInput'] : subForm.controlValue) || {};
+      const controlValue = (dataInputHasChanged ? (this as any)['dataInput'] : subForm.controlValue) || {};
       mergedValues = { ...transformedValue, ...controlValue } as ControlInterface;
     }
 
@@ -175,21 +197,6 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
     // TODO decide if we want to emit an event when input control value != control value after intialization
     // this happens for example when null is passed in but default values change the value of the inner form
     this.formGroup.reset(mergedValues, { onlySelf: false, emitEvent: false });
-  }
-
-  ngAfterContentChecked(): void {
-    // // TODO this runs too often, find out of this can be triggered differently
-    // // checking if the form group has a change detector (root forms might not)
-    // if (this.formGroup?.cd) {
-    //   // if this is the root form
-    //   // OR if ist a sub form but the root form does not have a change detector
-    //   // we need to actually run change detection vs just marking for check
-    //   if (!this.formGroup.parent) {
-    //     this.formGroup.cd.detectChanges();
-    //   } else {
-    //     this.formGroup.cd.markForCheck();
-    //   }
-    // }
   }
 
   private mapControls<MapValue>(
