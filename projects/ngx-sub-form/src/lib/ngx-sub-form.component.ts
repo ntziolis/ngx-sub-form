@@ -178,20 +178,15 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
 
     let mergedValues: ControlInterface;
     // not sure if this case is relevant as arrays are sub forms and would be handled by the other logic below
-    if (Array.isArray(transformedValue)) {
-      mergedValues = subForm.controlValue;
-    } else {
-      const controlValue = (dataInputHasChanged
-        ? (this as any)['dataInput']
-        : subForm.controlValue) as ControlInterface;
 
-      if (transformedValue && controlValue) {
-        mergedValues = { ...transformedValue, controlValue };
-      } else if (transformedValue) {
-        mergedValues = transformedValue;
-      } else {
-        mergedValues = controlValue;
-      }
+    const controlValue = (dataInputHasChanged ? (this as any)['dataInput'] : subForm.controlValue) as ControlInterface;
+
+    if (transformedValue && controlValue) {
+      mergedValues = { ...transformedValue, controlValue };
+    } else if (transformedValue) {
+      mergedValues = transformedValue;
+    } else {
+      mergedValues = controlValue;
     }
 
     const formValue = this.transformToFormGroup(mergedValues, {});
