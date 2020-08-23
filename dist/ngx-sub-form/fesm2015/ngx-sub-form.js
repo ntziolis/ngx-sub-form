@@ -454,22 +454,15 @@ class NgxSubFormComponent {
         const transformedValue = this.transformFromFormGroup(defaultValues) || undefined;
         let mergedValues;
         // not sure if this case is relevant as arrays are sub forms and would be handled by the other logic below
-        if (Array.isArray(transformedValue)) {
-            mergedValues = subForm.controlValue;
+        const controlValue = (dataInputHasChanged ? this['dataInput'] : subForm.controlValue);
+        if (transformedValue && controlValue) {
+            mergedValues = Object.assign(Object.assign({}, transformedValue), { controlValue });
+        }
+        else if (transformedValue) {
+            mergedValues = transformedValue;
         }
         else {
-            const controlValue = (dataInputHasChanged
-                ? this['dataInput']
-                : subForm.controlValue);
-            if (transformedValue && controlValue) {
-                mergedValues = Object.assign(Object.assign({}, transformedValue), { controlValue });
-            }
-            else if (transformedValue) {
-                mergedValues = transformedValue;
-            }
-            else {
-                mergedValues = controlValue;
-            }
+            mergedValues = controlValue;
         }
         const formValue = this.transformToFormGroup(mergedValues, {});
         this.handleFormArrayControls(formValue);
