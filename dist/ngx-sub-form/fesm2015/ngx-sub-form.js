@@ -124,10 +124,10 @@ class SubFormGroup extends FormGroup {
         if (!this.subForm) {
             return;
         }
-        const transformedValue = this.transformToFormGroup(value, {});
+        const formValue = this.transformToFormGroup(value, {});
         // TODO rethink as this might not work as we want it, we might not even need this anymore
         // @ts-ignore
-        super.value = transformedValue;
+        super.value = formValue;
         this.controlValue = value;
     }
     setSubForm(subForm) {
@@ -155,7 +155,7 @@ class SubFormGroup extends FormGroup {
             }
             return;
         }
-        this.controlValue = Object.assign(Object.assign({}, this.controlValue), value);
+        this.controlValue = value;
         // TODO check if providing {} does work, as we do not want to override existing values with default values
         // It might be that patchValue cannot be used as we dont have control over how transformToFormGroup is implemented
         // it would have to be done in a way that returns a partial TForm which right now is not how the method signatures are defined
@@ -196,7 +196,7 @@ class SubFormGroup extends FormGroup {
             this.controlValue = (value || []);
         }
         else {
-            this.controlValue = Object.assign(Object.assign({}, this.controlValue), value);
+            this.controlValue = value;
         }
         const formValue = this.transformToFormGroup(value, this.getDefaultValues());
         // TODO figure out how to handle for arrays
@@ -229,16 +229,8 @@ class SubFormGroup extends FormGroup {
         if (this.isRoot) {
             return;
         }
-        let parentSubFromGroup;
-        // if (this.parent instanceof FormArray) {
-        //   parentSubFromGroup = this.parent.parent;
-        // } else {
-        parentSubFromGroup = this.parent;
-        //}
-        if (!parentSubFromGroup) {
-            debugger;
-        }
-        parentSubFromGroup.updateValue(options);
+        const parent = this.parent;
+        parent.updateValue(options);
         //this.updateValueAndValidity(options);
     }
 }

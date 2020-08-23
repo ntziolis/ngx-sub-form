@@ -105,11 +105,11 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
       return;
     }
 
-    const transformedValue = (this.transformToFormGroup((value as unknown) as TControl, {}) as unknown) as TForm;
+    const formValue = (this.transformToFormGroup((value as unknown) as TControl, {}) as unknown) as TForm;
 
     // TODO rethink as this might not work as we want it, we might not even need this anymore
     // @ts-ignore
-    (super.value as any) = transformedValue;
+    (super.value as any) = formValue;
 
     this.controlValue = value;
   }
@@ -130,9 +130,9 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
     this.getDefaultValues = this.subForm['getDefaultValues'].bind(this.subForm);
   }
 
-  getRawValue(): any {
+  getRawValue(): TControl {
     const rawValue = super.getRawValue();
-    return this.transformFromFormGroup(rawValue);
+    return this.transformFromFormGroup(rawValue) as TControl;
   }
 
   setValue(value: TControl, options: { onlySelf?: boolean; emitEvent?: boolean } = {}): void {
@@ -144,7 +144,7 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
       return;
     }
 
-    this.controlValue = { ...this.controlValue, ...value };
+    this.controlValue = value;
 
     // TODO check if providing {} does work, as we do not want to override existing values with default values
     // It might be that patchValue cannot be used as we dont have control over how transformToFormGroup is implemented
@@ -194,7 +194,7 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
     if (Array.isArray(value)) {
       this.controlValue = (value || []) as any;
     } else {
-      this.controlValue = { ...this.controlValue, ...value };
+      this.controlValue = value as TControl;
     }
 
     const formValue = (this.transformToFormGroup(
@@ -239,18 +239,8 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
       return;
     }
 
-    let parentSubFromGroup: any;
-    // if (this.parent instanceof FormArray) {
-    //   parentSubFromGroup = this.parent.parent;
-    // } else {
-    parentSubFromGroup = this.parent;
-    //}
-
-    if (!parentSubFromGroup) {
-      debugger;
-    }
-
-    parentSubFromGroup.updateValue(options);
+    const parent = this.parent as SubFormGroup<any, any> | SubFormArray<any, any>;
+    parent.updateValue(options);
     //this.updateValueAndValidity(options);
   }
 }

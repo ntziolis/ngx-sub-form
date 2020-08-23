@@ -335,10 +335,10 @@
                 if (!this.subForm) {
                     return;
                 }
-                var transformedValue = this.transformToFormGroup(value, {});
+                var formValue = this.transformToFormGroup(value, {});
                 // TODO rethink as this might not work as we want it, we might not even need this anymore
                 // @ts-ignore
-                _super.prototype.value = transformedValue;
+                _super.prototype.value = formValue;
                 this.controlValue = value;
             },
             enumerable: true,
@@ -371,7 +371,7 @@
                 }
                 return;
             }
-            this.controlValue = __assign(__assign({}, this.controlValue), value);
+            this.controlValue = value;
             // TODO check if providing {} does work, as we do not want to override existing values with default values
             // It might be that patchValue cannot be used as we dont have control over how transformToFormGroup is implemented
             // it would have to be done in a way that returns a partial TForm which right now is not how the method signatures are defined
@@ -414,7 +414,7 @@
                 this.controlValue = (value || []);
             }
             else {
-                this.controlValue = __assign(__assign({}, this.controlValue), value);
+                this.controlValue = value;
             }
             var formValue = this.transformToFormGroup(value, this.getDefaultValues());
             // TODO figure out how to handle for arrays
@@ -459,16 +459,8 @@
             if (this.isRoot) {
                 return;
             }
-            var parentSubFromGroup;
-            // if (this.parent instanceof FormArray) {
-            //   parentSubFromGroup = this.parent.parent;
-            // } else {
-            parentSubFromGroup = this.parent;
-            //}
-            if (!parentSubFromGroup) {
-                debugger;
-            }
-            parentSubFromGroup.updateValue(options);
+            var parent = this.parent;
+            parent.updateValue(options);
             //this.updateValueAndValidity(options);
         };
         return SubFormGroup;

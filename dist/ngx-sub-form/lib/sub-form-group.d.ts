@@ -17,7 +17,7 @@ export declare class SubFormGroup<TControl, TForm = TControl> extends FormGroup 
     get value(): any;
     set value(value: any);
     setSubForm(subForm: NgxSubFormComponent<TControl, TForm>): void;
-    getRawValue(): any;
+    getRawValue(): TControl;
     setValue(value: TControl, options?: {
         onlySelf?: boolean;
         emitEvent?: boolean;
