@@ -71,7 +71,7 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
       throw new Error('The subForm input needs to be of type SubFormGroup.');
     }
 
-    const dataInputHasChanged = changes['dataInput'] !== undefined
+    const dataInputHasChanged = changes['dataInput'] !== undefined;
     this._initializeFormGroup(dataInputHasChanged);
   }
 
@@ -175,14 +175,23 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
 
     // get default values for reset, if null fallback to undefined as there si a difference when calling reset
     const transformedValue = this.transformFromFormGroup(defaultValues as FormInterface) || undefined;
-    // since this is the initial setting of form values do NOT emit an event
 
     let mergedValues: ControlInterface;
+    // not sure if this case is relevant as arrays are sub forms and would be handled by the other logic below
     if (Array.isArray(transformedValue)) {
       mergedValues = subForm.controlValue;
     } else {
-      const controlValue = (dataInputHasChanged ? (this as any)['dataInput'] : subForm.controlValue) || {};
-      mergedValues = { ...transformedValue, ...controlValue } as ControlInterface;
+      const controlValue = (dataInputHasChanged
+        ? (this as any)['dataInput']
+        : subForm.controlValue) as ControlInterface;
+
+      if (transformedValue && controlValue) {
+        mergedValues = { ...transformedValue, controlValue };
+      } else if (transformedValue) {
+        mergedValues = transformedValue;
+      } else {
+        mergedValues = controlValue;
+      }
     }
 
     const formValue = this.transformToFormGroup(mergedValues, {});
@@ -304,9 +313,10 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
   // shape of the form needs to be modified
   protected transformToFormGroup(
     obj: ControlInterface | null,
-    defaultValues: Partial<FormInterface> | null,
+    fallbackValue: Partial<FormInterface> | null,
   ): FormInterface | null {
-    return (obj as any) as FormInterface;
+    // formGroup values can't be null
+    return (obj || fallbackValue || {}) as FormInterface;
   }
 
   // that method can be overridden if the
@@ -324,7 +334,7 @@ export abstract class NgxSubFormRemapComponent<ControlInterface, FormInterface> 
 > {
   protected abstract transformToFormGroup(
     obj: ControlInterface | null,
-    defaultValues: Partial<FormInterface> | null,
+    fallbackValue: Partial<FormInterface> | null,
   ): FormInterface | null;
   protected abstract transformFromFormGroup(formValue: FormInterface): ControlInterface | null;
 }

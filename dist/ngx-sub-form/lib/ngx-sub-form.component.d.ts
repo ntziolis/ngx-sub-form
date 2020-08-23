@@ -20,10 +20,10 @@ export declare abstract class NgxSubFormComponent<ControlInterface, FormInterfac
     handleFormArrayControls(obj: any): void;
     private formIsFormWithArrayControls;
     handleEmissionRate(): (obs$: Observable<ControlInterface | null>) => Observable<ControlInterface | null>;
-    protected transformToFormGroup(obj: ControlInterface | null, defaultValues: Partial<FormInterface> | null): FormInterface | null;
+    protected transformToFormGroup(obj: ControlInterface | null, fallbackValue: Partial<FormInterface> | null): FormInterface | null;
     protected transformFromFormGroup(formValue: FormInterface): ControlInterface | null;
 }
 export declare abstract class NgxSubFormRemapComponent<ControlInterface, FormInterface> extends NgxSubFormComponent<ControlInterface, FormInterface> {
-    protected abstract transformToFormGroup(obj: ControlInterface | null, defaultValues: Partial<FormInterface> | null): FormInterface | null;
+    protected abstract transformToFormGroup(obj: ControlInterface | null, fallbackValue: Partial<FormInterface> | null): FormInterface | null;
     protected abstract transformFromFormGroup(formValue: FormInterface): ControlInterface | null;
 }

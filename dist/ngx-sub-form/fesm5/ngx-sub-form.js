@@ -167,7 +167,7 @@ var SubFormGroup = /** @class */ (function (_super) {
     };
     SubFormGroup.prototype.setValue = function (value, options) {
         if (options === void 0) { options = {}; }
-        // this happens when the parent sets a value but the sub-form-component has not tun ngOnInit yet
+        // this happens when the parent sets a value but the sub-form-component has not run ngChanges yet
         if (!this.subForm) {
             if (value) {
                 this.controlValue = value;
@@ -178,10 +178,10 @@ var SubFormGroup = /** @class */ (function (_super) {
         // TODO check if providing {} does work, as we do not want to override existing values with default values
         // It might be that patchValue cannot be used as we dont have control over how transformToFormGroup is implemented
         // it would have to be done in a way that returns a partial TForm which right now is not how the method signatures are defined
-        var transformedValue = this.transformToFormGroup(value, {});
+        var formValue = this.transformToFormGroup(value, {});
         // TODO figure out how to handle for arrays
-        this.subForm.handleFormArrayControls(this.controlValue);
-        _super.prototype.patchValue.call(this, transformedValue, options);
+        this.subForm.handleFormArrayControls(formValue);
+        _super.prototype.patchValue.call(this, formValue, options);
     };
     SubFormGroup.prototype.patchValue = function (value, options) {
         if (options === void 0) { options = {}; }
@@ -196,10 +196,10 @@ var SubFormGroup = /** @class */ (function (_super) {
         // TODO check if providing {} does work, as we do not want to override existing values with default values
         // It might be that patchValue cannot be used as we dont have control over how transformToFormGroup is implemented
         // it would have to be done in a way that returns a partial TForm which right now is not how the method signatures are defined
-        var transformedValue = this.transformToFormGroup(value, {});
+        var formValue = this.transformToFormGroup(value, {});
         // TODO figure out how to handle for arrays
-        this.subForm.handleFormArrayControls(this.controlValue);
-        _super.prototype.patchValue.call(this, transformedValue, options);
+        this.subForm.handleFormArrayControls(formValue);
+        _super.prototype.patchValue.call(this, formValue, options);
     };
     SubFormGroup.prototype.reset = function (value, options) {
         if (value === void 0) { value = {}; }
@@ -222,7 +222,7 @@ var SubFormGroup = /** @class */ (function (_super) {
         }
         var formValue = this.transformToFormGroup(value, this.getDefaultValues());
         // TODO figure out how to handle for arrays
-        this.subForm.handleFormArrayControls(this.controlValue);
+        this.subForm.handleFormArrayControls(formValue);
         _super.prototype.reset.call(this, formValue, options);
         // const controlValue = (this.transformFromFormGroup((value as unknown) as TForm) as unknown) as TControl;
     };
@@ -505,14 +505,24 @@ var NgxSubFormComponent = /** @class */ (function () {
         var defaultValues = this.getDefaultValues();
         // get default values for reset, if null fallback to undefined as there si a difference when calling reset
         var transformedValue = this.transformFromFormGroup(defaultValues) || undefined;
-        // since this is the initial setting of form values do NOT emit an event
         var mergedValues;
+        // not sure if this case is relevant as arrays are sub forms and would be handled by the other logic below
         if (Array.isArray(transformedValue)) {
             mergedValues = subForm.controlValue;
         }
         else {
-            var controlValue = (dataInputHasChanged ? this['dataInput'] : subForm.controlValue) || {};
-            mergedValues = __assign(__assign({}, transformedValue), controlValue);
+            var controlValue = (dataInputHasChanged
+                ? this['dataInput']
+                : subForm.controlValue);
+            if (transformedValue && controlValue) {
+                mergedValues = __assign(__assign({}, transformedValue), { controlValue: controlValue });
+            }
+            else if (transformedValue) {
+                mergedValues = transformedValue;
+            }
+            else {
+                mergedValues = controlValue;
+            }
         }
         var formValue = this.transformToFormGroup(mergedValues, {});
         this.handleFormArrayControls(formValue);
@@ -606,8 +616,9 @@ var NgxSubFormComponent = /** @class */ (function () {
     };
     // that method can be overridden if the
     // shape of the form needs to be modified
-    NgxSubFormComponent.prototype.transformToFormGroup = function (obj, defaultValues) {
-        return obj;
+    NgxSubFormComponent.prototype.transformToFormGroup = function (obj, fallbackValue) {
+        // formGroup values can't be null
+        return (obj || fallbackValue || {});
     };
     // that method can be overridden if the
     // shape of the form needs to be modified
