@@ -179,7 +179,7 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
     super.patchValue(formValue, options);
   }
 
-  reset(value: Partial<TControl> = {}, options: { onlySelf?: boolean; emitEvent?: boolean } = {}): void {
+  reset(value?: Partial<TControl>, options: { onlySelf?: boolean; emitEvent?: boolean } = {}): void {
     // reset is triggered from parent when formgroup is created
     // then again from sub-form inside ngOnInit after subForm was set
     // so when can safely ignore resets prior to subForm being set
