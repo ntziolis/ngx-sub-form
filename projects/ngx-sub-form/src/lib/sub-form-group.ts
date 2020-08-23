@@ -136,7 +136,7 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
   }
 
   setValue(value: TControl, options: { onlySelf?: boolean; emitEvent?: boolean } = {}): void {
-    // this happens when the parent sets a value but the sub-form-component has not tun ngOnInit yet
+    // this happens when the parent sets a value but the sub-form-component has not run ngChanges yet
     if (!this.subForm) {
       if (value) {
         this.controlValue = value;
@@ -149,12 +149,12 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
     // TODO check if providing {} does work, as we do not want to override existing values with default values
     // It might be that patchValue cannot be used as we dont have control over how transformToFormGroup is implemented
     // it would have to be done in a way that returns a partial TForm which right now is not how the method signatures are defined
-    const transformedValue = (this.transformToFormGroup((value as unknown) as TControl, {}) as unknown) as TForm;
+    const formValue = (this.transformToFormGroup((value as unknown) as TControl, {}) as unknown) as TForm;
 
     // TODO figure out how to handle for arrays
-    this.subForm.handleFormArrayControls(this.controlValue);
+    this.subForm.handleFormArrayControls(formValue);
 
-    super.patchValue(transformedValue, options);
+    super.patchValue(formValue, options);
   }
 
   patchValue(value: Partial<TControl>, options: { onlySelf?: boolean; emitEvent?: boolean } = {}): void {
@@ -171,12 +171,12 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
     // TODO check if providing {} does work, as we do not want to override existing values with default values
     // It might be that patchValue cannot be used as we dont have control over how transformToFormGroup is implemented
     // it would have to be done in a way that returns a partial TForm which right now is not how the method signatures are defined
-    const transformedValue = (this.transformToFormGroup((value as unknown) as TControl, {}) as unknown) as TForm;
+    const formValue = (this.transformToFormGroup((value as unknown) as TControl, {}) as unknown) as TForm;
 
     // TODO figure out how to handle for arrays
-    this.subForm.handleFormArrayControls(this.controlValue);
+    this.subForm.handleFormArrayControls(formValue);
 
-    super.patchValue(transformedValue, options);
+    super.patchValue(formValue, options);
   }
 
   reset(value: Partial<TControl> = {}, options: { onlySelf?: boolean; emitEvent?: boolean } = {}): void {
@@ -203,7 +203,7 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
     ) as unknown) as TForm;
 
     // TODO figure out how to handle for arrays
-    this.subForm.handleFormArrayControls(this.controlValue);
+    this.subForm.handleFormArrayControls(formValue);
 
     super.reset(formValue, options);
 
