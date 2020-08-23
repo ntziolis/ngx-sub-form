@@ -10,6 +10,7 @@ export declare abstract class NgxSubFormComponent<ControlInterface, FormInterfac
     get formControlNames(): ControlsNames<FormInterface>;
     ngOnChanges(changes: SimpleChanges): void;
     ngAfterContentChecked(): void;
+    protected _initializeFormGroup(dataInputHasChanged?: boolean): void;
     private mapControls;
     /**
      * Extend this method to provide custom local FormGroup level validation

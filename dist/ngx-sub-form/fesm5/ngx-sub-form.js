@@ -404,10 +404,8 @@ var NgxSubFormComponent = /** @class */ (function () {
         configurable: true
     });
     NgxSubFormComponent.prototype.ngOnChanges = function (changes) {
-        var _this = this;
         if (changes['dataInput'] === undefined &&
-            (changes['formGroup'] === undefined ||
-                (changes['formGroup'].firstChange && !changes['formGroup'].currentValue))) {
+            (changes['formGroup'] === undefined || (changes['formGroup'].firstChange && !changes['formGroup'].currentValue))) {
             return;
         }
         if (!this.formGroup) {
@@ -416,6 +414,31 @@ var NgxSubFormComponent = /** @class */ (function () {
         if (!(this.formGroup instanceof SubFormGroup)) {
             throw new Error('The subForm input needs to be of type SubFormGroup.');
         }
+        var dataInputHasChanged = changes['dataInput'] !== undefined;
+        this._initializeFormGroup(dataInputHasChanged);
+    };
+    NgxSubFormComponent.prototype.ngAfterContentChecked = function () {
+        var _a;
+        // TODO this runs too often, find out of this can be triggered differently
+        // checking if the form group has a change detector (root forms might not)
+        if ((_a = this.formGroup) === null || _a === void 0 ? void 0 : _a.cd) {
+            // if this is the root form
+            // OR if ist a sub form but the root form does not have a change detector
+            // we need to actually run change detection vs just marking for check
+            if (!this.formGroup.parent) {
+                this.formGroup.cd.detectChanges();
+            }
+            else {
+                this.formGroup.cd.markForCheck();
+            }
+        }
+    };
+    // is usually called by ngOnChanges
+    // but if root form is used without input attributes ngOnChanges might not be called
+    // hence if it wasn't called yet it is called from ngOnInit in root form
+    NgxSubFormComponent.prototype._initializeFormGroup = function (dataInputHasChanged) {
+        var _this = this;
+        if (dataInputHasChanged === void 0) { dataInputHasChanged = false; }
         Object.keys(this.formGroup.controls).forEach(function (key) {
             _this.formGroup.removeControl(key);
         });
@@ -488,7 +511,7 @@ var NgxSubFormComponent = /** @class */ (function () {
             mergedValues = subForm.controlValue;
         }
         else {
-            var controlValue = (changes['dataInput'] ? this['dataInput'] : subForm.controlValue) || {};
+            var controlValue = (dataInputHasChanged ? this['dataInput'] : subForm.controlValue) || {};
             mergedValues = __assign(__assign({}, transformedValue), controlValue);
         }
         var formValue = this.transformToFormGroup(mergedValues, {});
@@ -501,20 +524,6 @@ var NgxSubFormComponent = /** @class */ (function () {
         // TODO decide if we want to emit an event when input control value != control value after intialization
         // this happens for example when null is passed in but default values change the value of the inner form
         this.formGroup.reset(mergedValues, { onlySelf: false, emitEvent: false });
-    };
-    NgxSubFormComponent.prototype.ngAfterContentChecked = function () {
-        // // TODO this runs too often, find out of this can be triggered differently
-        // // checking if the form group has a change detector (root forms might not)
-        // if (this.formGroup?.cd) {
-        //   // if this is the root form
-        //   // OR if ist a sub form but the root form does not have a change detector
-        //   // we need to actually run change detection vs just marking for check
-        //   if (!this.formGroup.parent) {
-        //     this.formGroup.cd.detectChanges();
-        //   } else {
-        //     this.formGroup.cd.markForCheck();
-        //   }
-        // }
     };
     NgxSubFormComponent.prototype.mapControls = function (mapControl, filterControl, recursiveIfArray) {
         if (filterControl === void 0) { filterControl = function () { return true; }; }
@@ -641,20 +650,29 @@ var NgxRootFormComponent = /** @class */ (function (_super) {
         _this.emitInitialValueOnInit = false;
         _this.emitNullOnDestroy = false;
         _this.dataValue = null;
+        _this.formGroupInitialized = false;
         _this.formGroup = new SubFormGroup({});
         if (cd) {
             _this.formGroup.setChangeDetector(cd);
         }
         return _this;
     }
-    // needed for take until destroyed
-    NgxRootFormComponent.prototype.ngOnDestroy = function () { };
     NgxRootFormComponent.prototype.ngOnInit = function () {
         var _this = this;
+        if (!this.formGroupInitialized) {
+            this._initializeFormGroup();
+            this.formGroupInitialized = true;
+        }
         this._dataOutput$
             .pipe(takeUntilDestroyed(this), filter(function () { return _this.formGroup.valid; }), tap(function (value) { return _this.dataOutput.emit(value); }))
             .subscribe();
     };
+    NgxRootFormComponent.prototype.ngOnChanges = function (changes) {
+        _super.prototype.ngOnChanges.call(this, changes);
+        this.formGroupInitialized = true;
+    };
+    // needed for take until destroyed
+    NgxRootFormComponent.prototype.ngOnDestroy = function () { };
     /** @internal */
     NgxRootFormComponent.prototype.onRegisterOnChangeHook = function (data) {
         if (this.formGroup.invalid || isEqual(data, this.dataInput)) {

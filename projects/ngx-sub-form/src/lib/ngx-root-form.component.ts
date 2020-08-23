@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Directive, EventEmitter, OnDestroy, OnInit, Optional } from '@angular/core';
+import { ChangeDetectorRef, Directive, EventEmitter, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
 import isEqual from 'fast-deep-equal';
 import { Subject } from 'rxjs';
 import { filter, tap } from 'rxjs/operators';
@@ -12,7 +12,7 @@ import { SubFormGroup } from './sub-form-group';
 // tslint:disable-next-line: directive-class-suffix
 export abstract class NgxRootFormComponent<ControlInterface, FormInterface = ControlInterface>
   extends NgxSubFormRemapComponent<ControlInterface, FormInterface>
-  implements OnInit, OnDestroy {
+  implements OnInit, OnDestroy, OnChanges {
   public abstract dataInput: Required<ControlInterface> | null | undefined;
 
   public abstract dataOutput: EventEmitter<ControlInterface>;
@@ -25,6 +25,8 @@ export abstract class NgxRootFormComponent<ControlInterface, FormInterface = Con
   protected emitNullOnDestroy = false;
 
   protected dataValue: ControlInterface | null = null;
+
+  private formGroupInitialized = false;
 
   // change detector only needs to be passed from root form
   // for sub forms the sub-form-directive injects the change detector ref for us
@@ -40,10 +42,12 @@ export abstract class NgxRootFormComponent<ControlInterface, FormInterface = Con
     }
   }
 
-  // needed for take until destroyed
-  ngOnDestroy(): void {}
-
   public ngOnInit(): void {
+    if (!this.formGroupInitialized) {
+      this._initializeFormGroup();
+      this.formGroupInitialized = true;
+    }
+
     this._dataOutput$
       .pipe(
         takeUntilDestroyed(this),
@@ -52,6 +56,14 @@ export abstract class NgxRootFormComponent<ControlInterface, FormInterface = Con
       )
       .subscribe();
   }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    super.ngOnChanges(changes);
+    this.formGroupInitialized = true;
+  }
+
+  // needed for take until destroyed
+  ngOnDestroy(): void {}
 
   /** @internal */
   protected onRegisterOnChangeHook(data: ControlInterface | null): boolean {

@@ -362,8 +362,7 @@ class NgxSubFormComponent {
     }
     ngOnChanges(changes) {
         if (changes['dataInput'] === undefined &&
-            (changes['formGroup'] === undefined ||
-                (changes['formGroup'].firstChange && !changes['formGroup'].currentValue))) {
+            (changes['formGroup'] === undefined || (changes['formGroup'].firstChange && !changes['formGroup'].currentValue))) {
             return;
         }
         if (!this.formGroup) {
@@ -372,6 +371,29 @@ class NgxSubFormComponent {
         if (!(this.formGroup instanceof SubFormGroup)) {
             throw new Error('The subForm input needs to be of type SubFormGroup.');
         }
+        const dataInputHasChanged = changes['dataInput'] !== undefined;
+        this._initializeFormGroup(dataInputHasChanged);
+    }
+    ngAfterContentChecked() {
+        var _a;
+        // TODO this runs too often, find out of this can be triggered differently
+        // checking if the form group has a change detector (root forms might not)
+        if ((_a = this.formGroup) === null || _a === void 0 ? void 0 : _a.cd) {
+            // if this is the root form
+            // OR if ist a sub form but the root form does not have a change detector
+            // we need to actually run change detection vs just marking for check
+            if (!this.formGroup.parent) {
+                this.formGroup.cd.detectChanges();
+            }
+            else {
+                this.formGroup.cd.markForCheck();
+            }
+        }
+    }
+    // is usually called by ngOnChanges
+    // but if root form is used without input attributes ngOnChanges might not be called
+    // hence if it wasn't called yet it is called from ngOnInit in root form
+    _initializeFormGroup(dataInputHasChanged = false) {
         Object.keys(this.formGroup.controls).forEach(key => {
             this.formGroup.removeControl(key);
         });
@@ -444,7 +466,7 @@ class NgxSubFormComponent {
             mergedValues = subForm.controlValue;
         }
         else {
-            const controlValue = (changes['dataInput'] ? this['dataInput'] : subForm.controlValue) || {};
+            const controlValue = (dataInputHasChanged ? this['dataInput'] : subForm.controlValue) || {};
             mergedValues = Object.assign(Object.assign({}, transformedValue), controlValue);
         }
         const formValue = this.transformToFormGroup(mergedValues, {});
@@ -457,20 +479,6 @@ class NgxSubFormComponent {
         // TODO decide if we want to emit an event when input control value != control value after intialization
         // this happens for example when null is passed in but default values change the value of the inner form
         this.formGroup.reset(mergedValues, { onlySelf: false, emitEvent: false });
-    }
-    ngAfterContentChecked() {
-        // // TODO this runs too often, find out of this can be triggered differently
-        // // checking if the form group has a change detector (root forms might not)
-        // if (this.formGroup?.cd) {
-        //   // if this is the root form
-        //   // OR if ist a sub form but the root form does not have a change detector
-        //   // we need to actually run change detection vs just marking for check
-        //   if (!this.formGroup.parent) {
-        //     this.formGroup.cd.detectChanges();
-        //   } else {
-        //     this.formGroup.cd.markForCheck();
-        //   }
-        // }
     }
     mapControls(mapControl, filterControl = () => true, recursiveIfArray = true) {
         if (!this.formGroup) {
@@ -589,18 +597,27 @@ class NgxRootFormComponent extends NgxSubFormRemapComponent {
         this.emitInitialValueOnInit = false;
         this.emitNullOnDestroy = false;
         this.dataValue = null;
+        this.formGroupInitialized = false;
         this.formGroup = new SubFormGroup({});
         if (cd) {
             this.formGroup.setChangeDetector(cd);
         }
     }
-    // needed for take until destroyed
-    ngOnDestroy() { }
     ngOnInit() {
+        if (!this.formGroupInitialized) {
+            this._initializeFormGroup();
+            this.formGroupInitialized = true;
+        }
         this._dataOutput$
             .pipe(takeUntilDestroyed(this), filter(() => this.formGroup.valid), tap(value => this.dataOutput.emit(value)))
             .subscribe();
     }
+    ngOnChanges(changes) {
+        super.ngOnChanges(changes);
+        this.formGroupInitialized = true;
+    }
+    // needed for take until destroyed
+    ngOnDestroy() { }
     /** @internal */
     onRegisterOnChangeHook(data) {
         if (this.formGroup.invalid || isEqual(data, this.dataInput)) {
