@@ -399,7 +399,6 @@
             _super.prototype.patchValue.call(this, formValue, options);
         };
         SubFormGroup.prototype.reset = function (value, options) {
-            if (value === void 0) { value = {}; }
             if (options === void 0) { options = {}; }
             // reset is triggered from parent when formgroup is created
             // then again from sub-form inside ngOnInit after subForm was set

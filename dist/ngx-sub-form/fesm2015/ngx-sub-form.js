@@ -181,7 +181,7 @@ class SubFormGroup extends FormGroup {
         this.subForm.handleFormArrayControls(formValue);
         super.patchValue(formValue, options);
     }
-    reset(value = {}, options = {}) {
+    reset(value, options = {}) {
         // reset is triggered from parent when formgroup is created
         // then again from sub-form inside ngOnInit after subForm was set
         // so when can safely ignore resets prior to subForm being set
