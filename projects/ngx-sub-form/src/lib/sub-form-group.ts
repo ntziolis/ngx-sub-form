@@ -191,22 +191,19 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
     }
 
     const defaultValues = this.getDefaultValues() as TForm;
+    // if value is an array skip merging with default values
+    if (Array.isArray(value)) {
+      this.controlValue = (value as unknown) as TControl;
+    } else {
+      this.controlValue = { ...this.transformFromFormGroup(defaultValues), value } as TControl;
+    }
 
-    // only on reset we want to merge default values with a provided value 
-    const controlValue = { ...this.transformFromFormGroup(defaultValues), value } as TControl;
-
-    this.controlValue = controlValue;
-
-    const formValue = (this.transformToFormGroup(
-      controlValue, {}
-    ) as unknown) as TForm;
+    const formValue = (this.transformToFormGroup(this.controlValue, defaultValues) as unknown) as TForm;
 
     // TODO figure out how to handle for arrays
     this.subForm.handleFormArrayControls(formValue);
 
     super.reset(formValue, options);
-
-    // const controlValue = (this.transformFromFormGroup((value as unknown) as TForm) as unknown) as TControl;
   }
 
   private getControlValue(control: AbstractControl): any {
