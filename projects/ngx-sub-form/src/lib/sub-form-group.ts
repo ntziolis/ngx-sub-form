@@ -191,11 +191,19 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
     }
 
     const defaultValues = this.getDefaultValues() as TForm;
+    const defaultValuesAsControl = this.transformFromFormGroup(defaultValues) as TControl;
     // if value is an array skip merging with default values
-    if (Array.isArray(value)) {
+    if (Array.isArray(value) || Array.isArray(defaultValuesAsControl)) {
       this.controlValue = (value as unknown) as TControl;
+    } else if (
+      // in js null is also of type object
+      // hence we need to check for null before checking if its of type object
+      (value !== null && typeof value === 'object') ||
+      (defaultValuesAsControl !== null && typeof defaultValuesAsControl === 'object')
+    ) {
+      this.controlValue = { ...defaultValuesAsControl, ...value } as TControl;
     } else {
-      this.controlValue = { ...this.transformFromFormGroup(defaultValues), ...value } as TControl;
+      this.controlValue = ((value || defaultValuesAsControl) as unknown) as TControl;
     }
 
     const formValue = (this.transformToFormGroup(this.controlValue, defaultValues) as unknown) as TForm;
