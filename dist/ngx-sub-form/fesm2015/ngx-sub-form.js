@@ -192,14 +192,17 @@ class SubFormGroup extends FormGroup {
             return;
         }
         const defaultValues = this.getDefaultValues();
-        // only on reset we want to merge default values with a provided value 
-        const controlValue = Object.assign(Object.assign({}, this.transformFromFormGroup(defaultValues)), { value });
-        this.controlValue = controlValue;
-        const formValue = this.transformToFormGroup(controlValue, {});
+        // if value is an array skip merging with default values
+        if (Array.isArray(value)) {
+            this.controlValue = value;
+        }
+        else {
+            this.controlValue = Object.assign(Object.assign({}, this.transformFromFormGroup(defaultValues)), value);
+        }
+        const formValue = this.transformToFormGroup(this.controlValue, defaultValues);
         // TODO figure out how to handle for arrays
         this.subForm.handleFormArrayControls(formValue);
         super.reset(formValue, options);
-        // const controlValue = (this.transformFromFormGroup((value as unknown) as TForm) as unknown) as TControl;
     }
     getControlValue(control) {
         if (control instanceof SubFormGroup) {

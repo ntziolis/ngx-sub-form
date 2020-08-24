@@ -195,7 +195,7 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
     if (Array.isArray(value)) {
       this.controlValue = (value as unknown) as TControl;
     } else {
-      this.controlValue = { ...this.transformFromFormGroup(defaultValues), value } as TControl;
+      this.controlValue = { ...this.transformFromFormGroup(defaultValues), ...value } as TControl;
     }
 
     const formValue = (this.transformToFormGroup(this.controlValue, defaultValues) as unknown) as TForm;

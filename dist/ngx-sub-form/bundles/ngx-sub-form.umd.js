@@ -410,14 +410,17 @@
                 return;
             }
             var defaultValues = this.getDefaultValues();
-            // only on reset we want to merge default values with a provided value 
-            var controlValue = __assign(__assign({}, this.transformFromFormGroup(defaultValues)), { value: value });
-            this.controlValue = controlValue;
-            var formValue = this.transformToFormGroup(controlValue, {});
+            // if value is an array skip merging with default values
+            if (Array.isArray(value)) {
+                this.controlValue = value;
+            }
+            else {
+                this.controlValue = __assign(__assign({}, this.transformFromFormGroup(defaultValues)), value);
+            }
+            var formValue = this.transformToFormGroup(this.controlValue, defaultValues);
             // TODO figure out how to handle for arrays
             this.subForm.handleFormArrayControls(formValue);
             _super.prototype.reset.call(this, formValue, options);
-            // const controlValue = (this.transformFromFormGroup((value as unknown) as TForm) as unknown) as TControl;
         };
         SubFormGroup.prototype.getControlValue = function (control) {
             var _this = this;
