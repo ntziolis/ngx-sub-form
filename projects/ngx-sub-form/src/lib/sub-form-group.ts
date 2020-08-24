@@ -190,16 +190,15 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
       return;
     }
 
-    // special handling for array sub-forms
-    if (Array.isArray(value)) {
-      this.controlValue = (value || []) as any;
-    } else {
-      this.controlValue = value as TControl;
-    }
+    const defaultValues = this.getDefaultValues() as TForm;
+
+    // only on reset we want to merge default values with a provided value 
+    const controlValue = { ...this.transformFromFormGroup(defaultValues), value } as TControl;
+
+    this.controlValue = controlValue;
 
     const formValue = (this.transformToFormGroup(
-      (value as unknown) as TControl,
-      this.getDefaultValues(),
+      controlValue, {}
     ) as unknown) as TForm;
 
     // TODO figure out how to handle for arrays

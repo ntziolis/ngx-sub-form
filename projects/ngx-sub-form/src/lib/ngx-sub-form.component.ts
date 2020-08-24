@@ -263,7 +263,7 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
   }
 
   public handleFormArrayControls(obj: any) {
-    // TODO check if this can still happen, it appreaded during development. might alerady be fixed
+    // TODO check if this can still happen, it appeared during development. might already be fixed
     if (!this.formGroup) {
       return;
     }
@@ -308,10 +308,10 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
   // shape of the form needs to be modified
   protected transformToFormGroup(
     obj: ControlInterface | null,
-    fallbackValue: Partial<FormInterface> | null,
+    defaultValues: Partial<FormInterface> | null,
   ): FormInterface | null {
     // formGroup values can't be null
-    return (obj || fallbackValue || {}) as FormInterface;
+    return (obj || defaultValues || {}) as FormInterface;
   }
 
   // that method can be overridden if the
@@ -329,7 +329,7 @@ export abstract class NgxSubFormRemapComponent<ControlInterface, FormInterface> 
 > {
   protected abstract transformToFormGroup(
     obj: ControlInterface | null,
-    fallbackValue: Partial<FormInterface> | null,
+    defaultValues: Partial<FormInterface> | null,
   ): FormInterface | null;
   protected abstract transformFromFormGroup(formValue: FormInterface): ControlInterface | null;
 }

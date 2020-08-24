@@ -409,14 +409,11 @@
                 }
                 return;
             }
-            // special handling for array sub-forms
-            if (Array.isArray(value)) {
-                this.controlValue = (value || []);
-            }
-            else {
-                this.controlValue = value;
-            }
-            var formValue = this.transformToFormGroup(value, this.getDefaultValues());
+            var defaultValues = this.getDefaultValues();
+            // only on reset we want to merge default values with a provided value 
+            var controlValue = __assign(__assign({}, this.transformFromFormGroup(defaultValues)), { value: value });
+            this.controlValue = controlValue;
+            var formValue = this.transformToFormGroup(controlValue, {});
             // TODO figure out how to handle for arrays
             this.subForm.handleFormArrayControls(formValue);
             _super.prototype.reset.call(this, formValue, options);
@@ -758,7 +755,7 @@
         };
         NgxSubFormComponent.prototype.handleFormArrayControls = function (obj) {
             var _this = this;
-            // TODO check if this can still happen, it appreaded during development. might alerady be fixed
+            // TODO check if this can still happen, it appeared during development. might already be fixed
             if (!this.formGroup) {
                 return;
             }
@@ -797,9 +794,9 @@
         };
         // that method can be overridden if the
         // shape of the form needs to be modified
-        NgxSubFormComponent.prototype.transformToFormGroup = function (obj, fallbackValue) {
+        NgxSubFormComponent.prototype.transformToFormGroup = function (obj, defaultValues) {
             // formGroup values can't be null
-            return (obj || fallbackValue || {});
+            return (obj || defaultValues || {});
         };
         // that method can be overridden if the
         // shape of the form needs to be modified
