@@ -120,15 +120,18 @@ class SubFormGroup extends FormGroup {
         // return transformedValue;
         return this.controlValue;
     }
+    // this method is being called from angular code only
     set value(value) {
-        if (!this.subForm) {
-            return;
-        }
-        const formValue = this.transformToFormGroup(value, {});
+        // if (!this.subForm) {
+        //   return;
+        // }
+        // @ts-ignore
+        super.value = value;
+        //const formValue = (this.transformToFormGroup((value as unknown) as TControl, {}) as unknown) as TForm;
         // TODO rethink as this might not work as we want it, we might not even need this anymore
         // @ts-ignore
-        super.value = formValue;
-        this.controlValue = value;
+        // (super.value as any) = formValue;
+        //this.controlValue = value;
     }
     setSubForm(subForm) {
         this.subForm = subForm;
@@ -192,12 +195,20 @@ class SubFormGroup extends FormGroup {
             return;
         }
         const defaultValues = this.getDefaultValues();
+        const defaultValuesAsControl = this.transformFromFormGroup(defaultValues);
         // if value is an array skip merging with default values
-        if (Array.isArray(value)) {
+        if (Array.isArray(value) || Array.isArray(defaultValuesAsControl)) {
             this.controlValue = value;
         }
+        else if (
+        // in js null is also of type object
+        // hence we need to check for null before checking if its of type object
+        (value !== null && typeof value === 'object') ||
+            (defaultValuesAsControl !== null && typeof defaultValuesAsControl === 'object')) {
+            this.controlValue = Object.assign(Object.assign({}, defaultValuesAsControl), value);
+        }
         else {
-            this.controlValue = Object.assign(Object.assign({}, this.transformFromFormGroup(defaultValues)), value);
+            this.controlValue = (value || defaultValuesAsControl);
         }
         const formValue = this.transformToFormGroup(this.controlValue, defaultValues);
         // TODO figure out how to handle for arrays
