@@ -35,12 +35,16 @@ class CustomEventEmitter<TControl, TForm = TControl> extends EventEmitter<TContr
       return;
     }
 
-    const transformedValue = (this.transformToFormGroup((value as any) as TControl | null, {}) as unknown) as TControl;
+    super.emit(this.subForm.formGroup.controlValue);
 
-    // TODO figure out how to handle for arrays
-    // this.subForm.handleFormArrayControls(transformedValue);
 
-    return super.emit(transformedValue);
+
+    // const transformedValue = (this.transformToFormGroup((value as any) as TControl | null, {}) as unknown) as TControl;
+
+    // // TODO figure out how to handle for arrays
+    // // this.subForm.handleFormArrayControls(transformedValue);
+
+    // return super.emit(transformedValue);
   }
 }
 
@@ -240,7 +244,8 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
 
     this.controlValue = controlValue;
 
-    if (this.isRoot) {
+    // eith this is the root sub form or there is no root sub form
+    if (this.isRoot || !(this.parent instanceof SubFormGroup)) {
       return;
     }
 
