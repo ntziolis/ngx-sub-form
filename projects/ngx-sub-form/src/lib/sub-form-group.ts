@@ -13,38 +13,18 @@ import { NgxSubFormComponent } from './ngx-sub-form.component';
 
 class CustomEventEmitter<TControl, TForm = TControl> extends EventEmitter<TControl> {
   private subForm!: NgxSubFormComponent<TControl, TForm>;
-  private transformToFormGroup!: NgxSubFormComponent<TControl, TForm>['transformToFormGroup'];
-  private transformFromFormGroup!: NgxSubFormComponent<TControl, TForm>['transformFromFormGroup'];
-  private getDefaultValues!: NgxSubFormComponent<TControl, TForm>['getDefaultValues'];
 
   setSubForm(subForm: NgxSubFormComponent<TControl, TForm>) {
     this.subForm = subForm;
-
-    this.transformToFormGroup = (obj: TControl | null, defaultValues: Partial<TForm>) => {
-      return this.subForm['transformToFormGroup'](obj, defaultValues) || ({} as TForm);
-    };
-    this.transformFromFormGroup = this.subForm['transformFromFormGroup'];
-    this.getDefaultValues = this.subForm['getDefaultValues'];
   }
 
   emit(value?: TControl): void {
-    // all those would happen while the sub-form tree is still being initalized
-    // we can safely ignore all emits until subForm is set
-    // since in ngOnInit of sub-form-component base class we call reset with the intial values
+    // ignore all emit values until sub form tree is initialized
     if (!this.subForm) {
       return;
     }
 
     super.emit(this.subForm.formGroup.controlValue);
-
-
-
-    // const transformedValue = (this.transformToFormGroup((value as any) as TControl | null, {}) as unknown) as TControl;
-
-    // // TODO figure out how to handle for arrays
-    // // this.subForm.handleFormArrayControls(transformedValue);
-
-    // return super.emit(transformedValue);
   }
 }
 
