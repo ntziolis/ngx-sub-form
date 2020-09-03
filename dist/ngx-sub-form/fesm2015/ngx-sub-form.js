@@ -85,10 +85,11 @@ class CustomEventEmitter extends EventEmitter {
         if (!this.subForm) {
             return;
         }
-        const transformedValue = this.transformToFormGroup(value, {});
-        // TODO figure out how to handle for arrays
-        // this.subForm.handleFormArrayControls(transformedValue);
-        return super.emit(transformedValue);
+        super.emit(this.subForm.formGroup.controlValue);
+        // const transformedValue = (this.transformToFormGroup((value as any) as TControl | null, {}) as unknown) as TControl;
+        // // TODO figure out how to handle for arrays
+        // // this.subForm.handleFormArrayControls(transformedValue);
+        // return super.emit(transformedValue);
     }
 }
 class SubFormGroup extends FormGroup {
@@ -237,7 +238,8 @@ class SubFormGroup extends FormGroup {
         }
         const controlValue = this.transformFromFormGroup(formValue || {});
         this.controlValue = controlValue;
-        if (this.isRoot) {
+        // eith this is the root sub form or there is no root sub form
+        if (this.isRoot || !(this.parent instanceof SubFormGroup)) {
             return;
         }
         const parent = this.parent;

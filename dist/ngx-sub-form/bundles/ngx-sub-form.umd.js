@@ -291,10 +291,11 @@
             if (!this.subForm) {
                 return;
             }
-            var transformedValue = this.transformToFormGroup(value, {});
-            // TODO figure out how to handle for arrays
-            // this.subForm.handleFormArrayControls(transformedValue);
-            return _super.prototype.emit.call(this, transformedValue);
+            _super.prototype.emit.call(this, this.subForm.formGroup.controlValue);
+            // const transformedValue = (this.transformToFormGroup((value as any) as TControl | null, {}) as unknown) as TControl;
+            // // TODO figure out how to handle for arrays
+            // // this.subForm.handleFormArrayControls(transformedValue);
+            // return super.emit(transformedValue);
         };
         return CustomEventEmitter;
     }(core.EventEmitter));
@@ -467,7 +468,8 @@
             }
             var controlValue = this.transformFromFormGroup(formValue || {});
             this.controlValue = controlValue;
-            if (this.isRoot) {
+            // eith this is the root sub form or there is no root sub form
+            if (this.isRoot || !(this.parent instanceof SubFormGroup)) {
                 return;
             }
             var parent = this.parent;
