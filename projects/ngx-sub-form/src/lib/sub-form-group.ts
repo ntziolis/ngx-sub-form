@@ -13,38 +13,20 @@ import { NgxSubFormComponent } from './ngx-sub-form.component';
 
 class CustomEventEmitter<TControl, TForm = TControl> extends EventEmitter<TControl> {
   private subForm!: NgxSubFormComponent<TControl, TForm>;
-  private transformToFormGroup!: NgxSubFormComponent<TControl, TForm>['transformToFormGroup'];
-  private transformFromFormGroup!: NgxSubFormComponent<TControl, TForm>['transformFromFormGroup'];
-  private getDefaultValues!: NgxSubFormComponent<TControl, TForm>['getDefaultValues'];
 
   setSubForm(subForm: NgxSubFormComponent<TControl, TForm>) {
     this.subForm = subForm;
-
-    this.transformToFormGroup = (obj: TControl | null, defaultValues: Partial<TForm>) => {
-      return this.subForm['transformToFormGroup'](obj, defaultValues) || ({} as TForm);
-    };
-    this.transformFromFormGroup = this.subForm['transformFromFormGroup'];
-    this.getDefaultValues = this.subForm['getDefaultValues'];
   }
 
   emit(value?: TControl): void {
-    // all those would happen while the sub-form tree is still being initalized
-    // we can safely ignore all emits until subForm is set
-    // since in ngOnInit of sub-form-component base class we call reset with the intial values
+    // ignore all emit values until sub form tree is initialized
     if (!this.subForm) {
       return;
     }
 
+    this.subForm.formGroup.updateValue({ self: true });
+
     super.emit(this.subForm.formGroup.controlValue);
-
-
-
-    // const transformedValue = (this.transformToFormGroup((value as any) as TControl | null, {}) as unknown) as TControl;
-
-    // // TODO figure out how to handle for arrays
-    // // this.subForm.handleFormArrayControls(transformedValue);
-
-    // return super.emit(transformedValue);
   }
 }
 
@@ -163,6 +145,11 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
   }
 
   patchValue(value: Partial<TControl>, options: { onlySelf?: boolean; emitEvent?: boolean } = {}): void {
+    // when value is null treat patch value as set value
+    if (!value) {
+      return this.setValue(value, options);
+    }
+
     // this happens when the parent sets a value but the sub-form-component has not tun ngOnInit yet
     if (!this.subForm) {
       if (value) {
@@ -229,7 +216,7 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
     }
   }
 
-  updateValue(options: any) {
+  updateValue(options?: { self?: boolean }) {
     if (!this.subForm) {
       return;
     }
@@ -245,7 +232,7 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
     this.controlValue = controlValue;
 
     // eith this is the root sub form or there is no root sub form
-    if (this.isRoot || !(this.parent instanceof SubFormGroup)) {
+    if (options?.self || this.isRoot || !(this.parent instanceof SubFormGroup)) {
       return;
     }
 

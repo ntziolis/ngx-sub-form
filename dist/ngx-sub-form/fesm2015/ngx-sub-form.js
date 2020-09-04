@@ -72,24 +72,14 @@ function isNullOrUndefined(obj) {
 class CustomEventEmitter extends EventEmitter {
     setSubForm(subForm) {
         this.subForm = subForm;
-        this.transformToFormGroup = (obj, defaultValues) => {
-            return this.subForm['transformToFormGroup'](obj, defaultValues) || {};
-        };
-        this.transformFromFormGroup = this.subForm['transformFromFormGroup'];
-        this.getDefaultValues = this.subForm['getDefaultValues'];
     }
     emit(value) {
-        // all those would happen while the sub-form tree is still being initalized
-        // we can safely ignore all emits until subForm is set
-        // since in ngOnInit of sub-form-component base class we call reset with the intial values
+        // ignore all emit values until sub form tree is initialized
         if (!this.subForm) {
             return;
         }
+        this.subForm.formGroup.updateValue({ self: true });
         super.emit(this.subForm.formGroup.controlValue);
-        // const transformedValue = (this.transformToFormGroup((value as any) as TControl | null, {}) as unknown) as TControl;
-        // // TODO figure out how to handle for arrays
-        // // this.subForm.handleFormArrayControls(transformedValue);
-        // return super.emit(transformedValue);
     }
 }
 class SubFormGroup extends FormGroup {
@@ -169,6 +159,10 @@ class SubFormGroup extends FormGroup {
         super.patchValue(formValue, options);
     }
     patchValue(value, options = {}) {
+        // when value is null treat patch value as set value
+        if (!value) {
+            return this.setValue(value, options);
+        }
         // this happens when the parent sets a value but the sub-form-component has not tun ngOnInit yet
         if (!this.subForm) {
             if (value) {
@@ -228,6 +222,7 @@ class SubFormGroup extends FormGroup {
         }
     }
     updateValue(options) {
+        var _a;
         if (!this.subForm) {
             return;
         }
@@ -239,7 +234,7 @@ class SubFormGroup extends FormGroup {
         const controlValue = this.transformFromFormGroup(formValue || {});
         this.controlValue = controlValue;
         // eith this is the root sub form or there is no root sub form
-        if (this.isRoot || !(this.parent instanceof SubFormGroup)) {
+        if (((_a = options) === null || _a === void 0 ? void 0 : _a.self) || this.isRoot || !(this.parent instanceof SubFormGroup)) {
             return;
         }
         const parent = this.parent;

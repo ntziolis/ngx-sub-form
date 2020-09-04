@@ -79,26 +79,15 @@ var CustomEventEmitter = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     CustomEventEmitter.prototype.setSubForm = function (subForm) {
-        var _this = this;
         this.subForm = subForm;
-        this.transformToFormGroup = function (obj, defaultValues) {
-            return _this.subForm['transformToFormGroup'](obj, defaultValues) || {};
-        };
-        this.transformFromFormGroup = this.subForm['transformFromFormGroup'];
-        this.getDefaultValues = this.subForm['getDefaultValues'];
     };
     CustomEventEmitter.prototype.emit = function (value) {
-        // all those would happen while the sub-form tree is still being initalized
-        // we can safely ignore all emits until subForm is set
-        // since in ngOnInit of sub-form-component base class we call reset with the intial values
+        // ignore all emit values until sub form tree is initialized
         if (!this.subForm) {
             return;
         }
+        this.subForm.formGroup.updateValue({ self: true });
         _super.prototype.emit.call(this, this.subForm.formGroup.controlValue);
-        // const transformedValue = (this.transformToFormGroup((value as any) as TControl | null, {}) as unknown) as TControl;
-        // // TODO figure out how to handle for arrays
-        // // this.subForm.handleFormArrayControls(transformedValue);
-        // return super.emit(transformedValue);
     };
     return CustomEventEmitter;
 }(EventEmitter));
@@ -189,6 +178,10 @@ var SubFormGroup = /** @class */ (function (_super) {
     };
     SubFormGroup.prototype.patchValue = function (value, options) {
         if (options === void 0) { options = {}; }
+        // when value is null treat patch value as set value
+        if (!value) {
+            return this.setValue(value, options);
+        }
         // this happens when the parent sets a value but the sub-form-component has not tun ngOnInit yet
         if (!this.subForm) {
             if (value) {
@@ -251,13 +244,14 @@ var SubFormGroup = /** @class */ (function (_super) {
     };
     SubFormGroup.prototype.updateValue = function (options) {
         var e_1, _a;
+        var _b;
         if (!this.subForm) {
             return;
         }
         var formValue = {};
         try {
-            for (var _b = __values(Object.entries(this.subForm.formGroup.controls)), _c = _b.next(); !_c.done; _c = _b.next()) {
-                var _d = __read(_c.value, 2), key = _d[0], value = _d[1];
+            for (var _c = __values(Object.entries(this.subForm.formGroup.controls)), _d = _c.next(); !_d.done; _d = _c.next()) {
+                var _e = __read(_d.value, 2), key = _e[0], value = _e[1];
                 var control = value;
                 formValue[key] = this.getControlValue(control);
             }
@@ -265,14 +259,14 @@ var SubFormGroup = /** @class */ (function (_super) {
         catch (e_1_1) { e_1 = { error: e_1_1 }; }
         finally {
             try {
-                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+                if (_d && !_d.done && (_a = _c.return)) _a.call(_c);
             }
             finally { if (e_1) throw e_1.error; }
         }
         var controlValue = this.transformFromFormGroup(formValue || {});
         this.controlValue = controlValue;
         // eith this is the root sub form or there is no root sub form
-        if (this.isRoot || !(this.parent instanceof SubFormGroup)) {
+        if (((_b = options) === null || _b === void 0 ? void 0 : _b.self) || this.isRoot || !(this.parent instanceof SubFormGroup)) {
             return;
         }
         var parent = this.parent;
