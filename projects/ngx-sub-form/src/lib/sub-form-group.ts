@@ -24,6 +24,8 @@ class CustomEventEmitter<TControl, TForm = TControl> extends EventEmitter<TContr
       return;
     }
 
+    this.subForm.formGroup.updateValue({ self: true });
+
     super.emit(this.subForm.formGroup.controlValue);
   }
 }
@@ -143,6 +145,11 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
   }
 
   patchValue(value: Partial<TControl>, options: { onlySelf?: boolean; emitEvent?: boolean } = {}): void {
+    // when value is null treat patch value as set value
+    if (!value) {
+      return this.setValue(value, options);
+    }
+
     // this happens when the parent sets a value but the sub-form-component has not tun ngOnInit yet
     if (!this.subForm) {
       if (value) {
@@ -209,7 +216,7 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
     }
   }
 
-  updateValue(options: any) {
+  updateValue(options?: { self?: boolean }) {
     if (!this.subForm) {
       return;
     }
@@ -225,7 +232,7 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
     this.controlValue = controlValue;
 
     // eith this is the root sub form or there is no root sub form
-    if (this.isRoot || !(this.parent instanceof SubFormGroup)) {
+    if (options?.self || this.isRoot || !(this.parent instanceof SubFormGroup)) {
       return;
     }
 
