@@ -88,12 +88,15 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
 
   // this method is being called from angular code only
   set value(value: any) {
-    // if (!this.subForm) {
-    //   return;
-    // }
+    if (!this.subForm) {
+      return;
+    }
+
+    const controlValue = this.transformFromFormGroup((value as unknown) as TForm) as TControl;
+    this.controlValue = controlValue;
 
     // @ts-ignore
-    (super.value as any) = value;
+    (super.value as any) = controlValue;
     //const formValue = (this.transformToFormGroup((value as unknown) as TControl, {}) as unknown) as TForm;
     // TODO rethink as this might not work as we want it, we might not even need this anymore
     // @ts-ignore
@@ -221,13 +224,7 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
       return;
     }
 
-    const formValue = {} as any;
-    for (const [key, value] of Object.entries(this.subForm.formGroup.controls)) {
-      const control = value as AbstractControl;
-      formValue[key] = this.getControlValue(control);
-    }
-
-    const controlValue = (this.transformFromFormGroup(formValue || ({} as TForm)) as unknown) as TControl;
+    const controlValue = this._reduceValue() as TControl;
 
     this.controlValue = controlValue;
 
@@ -239,6 +236,22 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
     const parent = this.parent as SubFormGroup<any, any> | SubFormArray<any, any>;
     parent.updateValue(options);
     //this.updateValueAndValidity(options);
+  }
+
+  _reduceValue(): TControl | null {
+    if (!this.subForm) {
+      return null;
+    }
+
+    const formValue = {} as any;
+    for (const [key, value] of Object.entries(this.subForm.formGroup.controls)) {
+      const control = value as AbstractControl;
+      formValue[key] = this.getControlValue(control);
+    }
+
+    const controlValue = (this.transformFromFormGroup(formValue || ({} as TForm)) as unknown) as TControl;
+
+    return controlValue;
   }
 }
 
