@@ -88,12 +88,15 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
 
   // this method is being called from angular code only
   set value(value: any) {
-    // if (!this.subForm) {
-    //   return;
-    // }
+    if (!this.subForm) {
+      return;
+    }
+
+    const controlValue = this.transformFromFormGroup((value as unknown) as TForm) as TControl;
+    this.controlValue = controlValue;
 
     // @ts-ignore
-    (super.value as any) = value;
+    (super.value as any) = controlValue;
     //const formValue = (this.transformToFormGroup((value as unknown) as TControl, {}) as unknown) as TForm;
     // TODO rethink as this might not work as we want it, we might not even need this anymore
     // @ts-ignore
