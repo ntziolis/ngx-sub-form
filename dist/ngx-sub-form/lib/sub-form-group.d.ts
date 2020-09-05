@@ -34,6 +34,7 @@ export declare class SubFormGroup<TControl, TForm = TControl> extends FormGroup 
     updateValue(options?: {
         self?: boolean;
     }): void;
+    _reduceValue(): TControl | null;
 }
 export declare function patchFormControl<TControl, TForm>(subFormGroup: SubFormGroup<TControl, TForm>, control: FormControl): void;
 export declare class SubFormArray<TControl, TForm = TControl> extends FormArray {

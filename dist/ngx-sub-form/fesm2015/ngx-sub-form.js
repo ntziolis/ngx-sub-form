@@ -228,12 +228,7 @@ class SubFormGroup extends FormGroup {
         if (!this.subForm) {
             return;
         }
-        const formValue = {};
-        for (const [key, value] of Object.entries(this.subForm.formGroup.controls)) {
-            const control = value;
-            formValue[key] = this.getControlValue(control);
-        }
-        const controlValue = this.transformFromFormGroup(formValue || {});
+        const controlValue = this._reduceValue();
         this.controlValue = controlValue;
         // eith this is the root sub form or there is no root sub form
         if (((_a = options) === null || _a === void 0 ? void 0 : _a.self) || this.isRoot || !(this.parent instanceof SubFormGroup)) {
@@ -242,6 +237,18 @@ class SubFormGroup extends FormGroup {
         const parent = this.parent;
         parent.updateValue(options);
         //this.updateValueAndValidity(options);
+    }
+    _reduceValue() {
+        if (!this.subForm) {
+            return null;
+        }
+        const formValue = {};
+        for (const [key, value] of Object.entries(this.subForm.formGroup.controls)) {
+            const control = value;
+            formValue[key] = this.getControlValue(control);
+        }
+        const controlValue = this.transformFromFormGroup(formValue || {});
+        return controlValue;
     }
 }
 // this idea of this is that when a non sub form group is being updated the sub form group needs to be notifed

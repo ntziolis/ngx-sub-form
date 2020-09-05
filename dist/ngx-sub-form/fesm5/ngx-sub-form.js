@@ -245,15 +245,29 @@ var SubFormGroup = /** @class */ (function (_super) {
         }
     };
     SubFormGroup.prototype.updateValue = function (options) {
-        var e_1, _a;
-        var _b;
+        var _a;
         if (!this.subForm) {
             return;
         }
+        var controlValue = this._reduceValue();
+        this.controlValue = controlValue;
+        // eith this is the root sub form or there is no root sub form
+        if (((_a = options) === null || _a === void 0 ? void 0 : _a.self) || this.isRoot || !(this.parent instanceof SubFormGroup)) {
+            return;
+        }
+        var parent = this.parent;
+        parent.updateValue(options);
+        //this.updateValueAndValidity(options);
+    };
+    SubFormGroup.prototype._reduceValue = function () {
+        var e_1, _a;
+        if (!this.subForm) {
+            return null;
+        }
         var formValue = {};
         try {
-            for (var _c = __values(Object.entries(this.subForm.formGroup.controls)), _d = _c.next(); !_d.done; _d = _c.next()) {
-                var _e = __read(_d.value, 2), key = _e[0], value = _e[1];
+            for (var _b = __values(Object.entries(this.subForm.formGroup.controls)), _c = _b.next(); !_c.done; _c = _b.next()) {
+                var _d = __read(_c.value, 2), key = _d[0], value = _d[1];
                 var control = value;
                 formValue[key] = this.getControlValue(control);
             }
@@ -261,19 +275,12 @@ var SubFormGroup = /** @class */ (function (_super) {
         catch (e_1_1) { e_1 = { error: e_1_1 }; }
         finally {
             try {
-                if (_d && !_d.done && (_a = _c.return)) _a.call(_c);
+                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
             }
             finally { if (e_1) throw e_1.error; }
         }
         var controlValue = this.transformFromFormGroup(formValue || {});
-        this.controlValue = controlValue;
-        // eith this is the root sub form or there is no root sub form
-        if (((_b = options) === null || _b === void 0 ? void 0 : _b.self) || this.isRoot || !(this.parent instanceof SubFormGroup)) {
-            return;
-        }
-        var parent = this.parent;
-        parent.updateValue(options);
-        //this.updateValueAndValidity(options);
+        return controlValue;
     };
     return SubFormGroup;
 }(FormGroup));
