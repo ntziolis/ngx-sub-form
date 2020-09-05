@@ -44,6 +44,7 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
   public readonly parentValidatorOrOpts: ValidatorFn | ValidatorFn[] | AbstractControlOptions | null | undefined;
   public readonly parentAsyncValidator: AsyncValidatorFn | AsyncValidatorFn[] | null | undefined;
 
+  public value: TControl | null = null;
   constructor(
     value: Partial<TControl> | null,
     validatorOrOpts?: ValidatorFn | ValidatorFn[] | AbstractControlOptions | null,
@@ -67,39 +68,49 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
 
     this.parentValidatorOrOpts = validatorOrOpts;
     this.parentAsyncValidator = asyncValidator;
+
+    Object.defineProperty(this, 'value', {
+      // only returns odd die sides
+      get: function() {
+        return this.controlValue;
+      },
+      set: function() {
+        //return (Math.random() * 6) | 1;
+      },
+    });
   }
 
   setChangeDetector(cd: ChangeDetectorRef) {
     this.cd = cd;
   }
 
-  get value() {
-    // if (!this.subForm) {
-    //   return null;
-    // }
+  // get value() {
+  //   // if (!this.subForm) {
+  //   //   return null;
+  //   // }
 
-    // const transformedValue = (this.transformFromFormGroup(
-    //   (super.value as any) as TForm,
-    // ) as unknown) as TControl;
-    // return transformedValue;
+  //   // const transformedValue = (this.transformFromFormGroup(
+  //   //   (super.value as any) as TForm,
+  //   // ) as unknown) as TControl;
+  //   // return transformedValue;
 
-    return this.controlValue;
-  }
+  //   return this.controlValue;
+  // }
 
-  // this method is being called from angular code only
-  set value(value: any) {
-    // if (!this.subForm) {
-    //   return;
-    // }
+  // // this method is being called from angular code only
+  // set value(value: any) {
+  //   // if (!this.subForm) {
+  //   //   return;
+  //   // }
 
-    // @ts-ignore
-    (super.value as any) = value;
-    //const formValue = (this.transformToFormGroup((value as unknown) as TControl, {}) as unknown) as TForm;
-    // TODO rethink as this might not work as we want it, we might not even need this anymore
-    // @ts-ignore
-    // (super.value as any) = formValue;
-    //this.controlValue = value;
-  }
+  //   // @ts-ignore
+  //   (super.value as any) = value;
+  //   //const formValue = (this.transformToFormGroup((value as unknown) as TControl, {}) as unknown) as TForm;
+  //   // TODO rethink as this might not work as we want it, we might not even need this anymore
+  //   // @ts-ignore
+  //   // (super.value as any) = formValue;
+  //   //this.controlValue = value;
+  // }
 
   setSubForm(subForm: NgxSubFormComponent<TControl, TForm>) {
     this.subForm = subForm;
