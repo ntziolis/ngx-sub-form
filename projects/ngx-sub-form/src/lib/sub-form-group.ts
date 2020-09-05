@@ -224,13 +224,7 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
       return;
     }
 
-    const formValue = {} as any;
-    for (const [key, value] of Object.entries(this.subForm.formGroup.controls)) {
-      const control = value as AbstractControl;
-      formValue[key] = this.getControlValue(control);
-    }
-
-    const controlValue = (this.transformFromFormGroup(formValue || ({} as TForm)) as unknown) as TControl;
+    const controlValue = this._reduceValue() as TControl;
 
     this.controlValue = controlValue;
 
@@ -242,6 +236,22 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
     const parent = this.parent as SubFormGroup<any, any> | SubFormArray<any, any>;
     parent.updateValue(options);
     //this.updateValueAndValidity(options);
+  }
+
+  _reduceValue(): TControl | null {
+    if (!this.subForm) {
+      return null;
+    }
+
+    const formValue = {} as any;
+    for (const [key, value] of Object.entries(this.subForm.formGroup.controls)) {
+      const control = value as AbstractControl;
+      formValue[key] = this.getControlValue(control);
+    }
+
+    const controlValue = (this.transformFromFormGroup(formValue || ({} as TForm)) as unknown) as TControl;
+
+    return controlValue;
   }
 }
 
