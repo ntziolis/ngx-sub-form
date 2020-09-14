@@ -208,7 +208,9 @@ export class SubFormGroup<TControl, TForm = TControl> extends FormGroup {
     if (control instanceof SubFormGroup) {
       return control.controlValue;
     } else if (control instanceof SubFormArray) {
-      return control.controls.map(arrayElementControl => this.getControlValue(arrayElementControl));
+      return control.controls
+        .map(arrayElementControl => this.getControlValue(arrayElementControl))
+        .filter(value => value !== undefined);
     } else {
       return control.value;
     }
