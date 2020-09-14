@@ -182,7 +182,13 @@ export abstract class NgxSubFormComponent<ControlInterface, FormInterface = Cont
     const controlValue = (dataInputHasChanged ? (this as any)['dataInput'] : subForm.controlValue) as ControlInterface;
 
     if (transformedValue && controlValue) {
-      mergedValues = { ...transformedValue, controlValue };
+      if (Array.isArray(controlValue)) {
+          mergedValues = controlValue;
+      } else if (Array.isArray(transformedValue)) {
+        mergedValues = transformedValue as ControlInterface;
+      } else {
+        mergedValues = { ...transformedValue, ...controlValue };
+      }
     } else if (transformedValue) {
       mergedValues = transformedValue;
     } else {
