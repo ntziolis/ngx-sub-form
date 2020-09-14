@@ -233,7 +233,9 @@ var SubFormGroup = /** @class */ (function (_super) {
             return control.controlValue;
         }
         else if (control instanceof SubFormArray) {
-            return control.controls.map(function (arrayElementControl) { return _this.getControlValue(arrayElementControl); });
+            return control.controls
+                .map(function (arrayElementControl) { return _this.getControlValue(arrayElementControl); })
+                .filter(function (value) { return value !== undefined; });
         }
         else {
             return control.value;
