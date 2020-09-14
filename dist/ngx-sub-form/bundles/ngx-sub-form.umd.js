@@ -321,20 +321,15 @@
                 // return transformedValue;
                 return this.controlValue;
             },
-            // this method is being called from angular code only
+            // this method is being called from angular code only with value of _reduceValue() which returns the current controlValue
             set: function (value) {
                 if (!this.subForm) {
                     return;
                 }
-                var controlValue = this.transformFromFormGroup(value);
+                var controlValue = value; //this.transformFromFormGroup((value as unknown) as TForm) as TControl;
                 this.controlValue = controlValue;
                 // @ts-ignore
                 _super.prototype.value = controlValue;
-                //const formValue = (this.transformToFormGroup((value as unknown) as TControl, {}) as unknown) as TForm;
-                // TODO rethink as this might not work as we want it, we might not even need this anymore
-                // @ts-ignore
-                // (super.value as any) = formValue;
-                //this.controlValue = value;
             },
             enumerable: true,
             configurable: true
@@ -713,7 +708,15 @@
             // not sure if this case is relevant as arrays are sub forms and would be handled by the other logic below
             var controlValue = (dataInputHasChanged ? this['dataInput'] : subForm.controlValue);
             if (transformedValue && controlValue) {
-                mergedValues = __assign(__assign({}, transformedValue), { controlValue: controlValue });
+                if (Array.isArray(controlValue)) {
+                    mergedValues = controlValue;
+                }
+                else if (Array.isArray(transformedValue)) {
+                    mergedValues = transformedValue;
+                }
+                else {
+                    mergedValues = __assign(__assign({}, transformedValue), controlValue);
+                }
             }
             else if (transformedValue) {
                 mergedValues = transformedValue;

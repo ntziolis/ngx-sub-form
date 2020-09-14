@@ -111,20 +111,15 @@ class SubFormGroup extends FormGroup {
         // return transformedValue;
         return this.controlValue;
     }
-    // this method is being called from angular code only
+    // this method is being called from angular code only with value of _reduceValue() which returns the current controlValue
     set value(value) {
         if (!this.subForm) {
             return;
         }
-        const controlValue = this.transformFromFormGroup(value);
+        const controlValue = value; //this.transformFromFormGroup((value as unknown) as TForm) as TControl;
         this.controlValue = controlValue;
         // @ts-ignore
         super.value = controlValue;
-        //const formValue = (this.transformToFormGroup((value as unknown) as TControl, {}) as unknown) as TForm;
-        // TODO rethink as this might not work as we want it, we might not even need this anymore
-        // @ts-ignore
-        // (super.value as any) = formValue;
-        //this.controlValue = value;
     }
     setSubForm(subForm) {
         this.subForm = subForm;
@@ -473,7 +468,15 @@ class NgxSubFormComponent {
         // not sure if this case is relevant as arrays are sub forms and would be handled by the other logic below
         const controlValue = (dataInputHasChanged ? this['dataInput'] : subForm.controlValue);
         if (transformedValue && controlValue) {
-            mergedValues = Object.assign(Object.assign({}, transformedValue), { controlValue });
+            if (Array.isArray(controlValue)) {
+                mergedValues = controlValue;
+            }
+            else if (Array.isArray(transformedValue)) {
+                mergedValues = transformedValue;
+            }
+            else {
+                mergedValues = Object.assign(Object.assign({}, transformedValue), controlValue);
+            }
         }
         else if (transformedValue) {
             mergedValues = transformedValue;
